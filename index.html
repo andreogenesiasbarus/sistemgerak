@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioLab 3D — Sistem Gerak Manusia | Biologi SMA Kelas XI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --accent: #4f46e5;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .brand-badge {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    /* Hero Section */
+    main {
+      flex: 1;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.08);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2.5rem;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #eef2ff;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.82rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--primary);
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      text-decoration: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      padding: 0.9rem 1.75rem;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 6px 18px rgba(15, 118, 110, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    /* Info Card Right */
+    .hero-card {
+      background: linear-gradient(145deg, #0f766e, #1e3a8a);
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 2rem;
+    }
+
+    .hero-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 0.75rem;
+    }
+
+    .stat-list {
+      list-style: none;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .stat-list li {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+      background: rgba(255,255,255,0.1);
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+    }
+
+    .stat-list strong {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Panduan 3 Langkah */
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .step-num {
+      width: 34px;
+      height: 34px;
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      font-weight: 800;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .step-card h4 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-bottom: 0.4rem;
+    }
+
+    .step-card p {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    @media (max-width: 820px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>🦴 BioLab 3D</span>
+      <span class="brand-badge">Biologi SMA Kelas XI</span>
+    </div>
+    <a href="biolab.html" class="btn-primary" style="padding: 0.55rem 1.1rem; font-size: 0.9rem;">
+      Buka Lab 3D →
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="pill">Kurikulum Merdeka • Fase F • Sistem Gerak</span>
+        <h1>Eksplorasi Anatomi <span>Rangka Manusia 3D</span> Interaktif</h1>
+        <p>
+          Media pembelajaran laboratorium virtual untuk mempelajari struktur 206 tulang penyusun tubuh manusia, tata nama ilmiah (Latin), klasifikasi aksial-apendikular, serta evaluasi pemahaman secara mandiri.
+        </p>
+        <div class="cta-group">
+          <a href="biolab.html" class="btn-primary">
+            🔬 Masuk ke Ruang BioLab 3D
+          </a>
+          <a href="#panduan" class="btn-secondary">
+            📖 Baca Petunjuk Belajar
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <h3>Ringkasan Materi & Target</h3>
+        <ul class="stat-list">
+          <li><span>Mata Pelajaran</span><strong>Biologi (Fase F)</strong></li>
+          <li><span>Jenjang / Kelas</span><strong>SMA Kelas XI</strong></li>
+          <li><span>Total Tulang Dewasa</span><strong>206 Tulang</strong></li>
+          <li><span>Rangka Aksial</span><strong>80 Tulang</strong></li>
+          <li><span>Rangka Apendikular</span><strong>126 Tulang</strong></li>
+          <li><span>KKTP Evaluasi</span><strong>Skor ≥ 75</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="panduan">
+      <h2 class="section-title">Alur Penggunaan Media Pembelajaran</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Pahami Tujuan Pembelajaran</h4>
+          <p>Pelajari Capaian Pembelajaran (CP) dan indikator ketercapaian sebelum memulai eksplorasi model anatomi.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>Eksplorasi Rangka 3D (360°)</h4>
+          <p>Putar objek 360°, perbesar bagian sendi, dan klik setiap tulang untuk melihat nama Latin, jumlah, serta fungsinya.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>Kerjakan Kuis & Cek Nilai</h4>
+          <p>Isi Nama Lengkap, Kelas, dan Nomor Absen pada tab Kuis Peserta Didik. Hasil akhir otomatis tersimpan di Daftar Nilai.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Media Pembelajaran Biologi SMA Kelas XI — Materi Sistem Gerak Manusia (BioLab 3D)
+  </footer>
+
+</body>
+</html>
