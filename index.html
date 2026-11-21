@@ -1,0 +1,2948 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Anatomi Rangka Manusia 3D & Evaluasi Sistem Gerak</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Three.js r128 & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Latar Lab Sains Modern untuk Halaman */
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 0.85px, transparent 0.85px);
+            background-size: 22px 22px;
+        }
+
+        /* Studio Latar Terang Medis Kontras Tinggi untuk Rangka 3D */
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 560px;
+            touch-action: none;
+            cursor: grab;
+            background: radial-gradient(circle at 50% 42%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
+        }
+        #canvas-container:active { cursor: grabbing; }
+        canvas { display: block; width: 100%; height: 100%; outline: none; }
+
+        /* Pin Label Terapung 3D */
+        .pin-label-3d {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+        .pin-label-3d:hover {
+            z-index: 30;
+            transform: translate(-50%, -50%) scale(1.06);
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-teal-600 selection:text-white">
+
+    <!-- ===================================================================== -->
+    <!-- NAVBAR UTAMA & MENU NAVIGASI 4 TAB (KURIKULUM MERDEKA FASE F)         -->
+    <!-- ===================================================================== -->
+    <header class="bg-white/90 backdrop-blur-lg border-b border-slate-200/90 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-[1480px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand / Judul -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-700 flex items-center justify-center text-white shadow-md shadow-teal-600/25 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a2.5 2.5 0 00-3.536 0 2.5 2.5 0 01-3.535 0 2.5 2.5 0 00-3.536 3.536 2.5 2.5 0 010 3.535l-2.121 2.122a2.5 2.5 0 01-3.536 0 2.5 2.5 0 000 3.535 2.5 2.5 0 003.536 0 2.5 2.5 0 013.535 0 2.5 2.5 0 003.536-3.535 2.5 2.5 0 010-3.536l2.121-2.121a2.5 2.5 0 013.536 0 2.5 2.5 0 000-3.536z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-display font-extrabold text-base sm:text-lg text-slate-900 leading-tight">
+                            BioLab 3D • Sistem Gerak
+                        </h1>
+                        <span class="hidden sm:inline-flex px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+                            Biologi • Fase F • SMA Kelas XI
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500">Atlas Anatomi Rangka Manusia (206 Tulang) & Evaluasi Mandiri</p>
+                </div>
+            </div>
+
+            <!-- Navigasi 4 Tab Utama -->
+            <nav class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 order-3 xl:order-2 w-full xl:w-auto justify-center overflow-x-auto">
+                <button onclick="switchMainTab('objectives')" id="tab-btn-objectives"
+                    class="main-tab-btn flex-1 xl:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span>Tujuan Pembelajaran</span>
+                </button>
+
+                <button onclick="switchMainTab('explore')" id="tab-btn-explore"
+                    class="main-tab-btn flex-1 xl:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-teal-700 shadow-sm transition whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
+                    </svg>
+                    <span>Eksplorasi Rangka 3D</span>
+                </button>
+
+                <button onclick="switchMainTab('quiz')" id="tab-btn-quiz"
+                    class="main-tab-btn flex-1 xl:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    <span>Kuis Peserta Didik</span>
+                </button>
+
+                <button onclick="switchMainTab('scores')" id="tab-btn-scores"
+                    class="main-tab-btn flex-1 xl:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span>Daftar Nilai</span>
+                    <span id="navScoreCount" class="ml-0.5 px-1.5 py-0.2 text-[10px] font-mono font-bold bg-teal-600 text-white rounded-full">3</span>
+                </button>
+            </nav>
+
+            <!-- Tombol Tabel Ringkasan 206 Tulang -->
+            <div class="flex items-center gap-2 order-2 xl:order-3">
+                <button onclick="openInfoModal()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm">
+                    <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="hidden sm:inline">Tabel 206 Tulang</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notifikasi -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toastContent" class="px-4 py-3 rounded-xl shadow-xl font-medium text-xs sm:text-sm flex items-center gap-2.5 bg-slate-900 text-white border border-slate-700">
+            <span id="toastIcon"></span>
+            <span id="toastMessage">Pesan notifikasi</span>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 0: TUJUAN PEMBELAJARAN (KURIKULUM MERDEKA FASE F - SMA KELAS XI)  -->
+    <!-- ===================================================================== -->
+    <section id="view-objectives" class="hidden flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <!-- Hero Banner Capaian Pembelajaran Fase F -->
+        <div class="bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-teal-700/50 relative overflow-hidden">
+            <div class="relative z-10 max-w-4xl">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-teal-400/20 text-teal-200 border border-teal-400/30">
+                        Kurikulum Merdeka • Fase F
+                    </span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-emerald-200 border border-white/15">
+                        Mata Pelajaran Biologi • SMA Kelas XI
+                    </span>
+                </div>
+                <h2 class="font-display font-extrabold text-2xl sm:text-3xl tracking-tight leading-snug">
+                    Sistem Gerak pada Manusia: Struktur & Fungsi Rangka
+                </h2>
+                <div class="mt-4 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 sm:p-5">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-teal-300 mb-1">
+                        Capaian Pembelajaran (CP) Elemen Pemahaman Biologi:
+                    </p>
+                    <p class="text-sm sm:text-base text-slate-100 leading-relaxed">
+                        Pada akhir Fase F, peserta didik memiliki kemampuan menganalisis keterkaitan struktur organ pada sistem gerak dengan fungsinya serta kelainan atau gangguan yang muncul pada sistem organ tersebut dalam kehidupan sehari-hari.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Tujuan Pembelajaran (TP) Utama -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200">
+                <div>
+                    <h3 class="font-display font-extrabold text-xl text-slate-900">
+                        Tujuan Pembelajaran (TP)
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                        Kompetensi yang diharapkan dikuasai peserta didik setelah mengikuti kegiatan pembelajaran digital ini:
+                    </p>
+                </div>
+                <span class="self-start sm:self-center px-3 py-1 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 text-xs font-mono font-bold">
+                    KKTP: ≥ 75 Poin
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                <!-- TP 1 -->
+                <div class="p-5 rounded-2xl bg-slate-50/90 border border-slate-200 hover:border-teal-400 transition group">
+                    <div class="flex items-center gap-3 mb-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-teal-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-sm">
+                            01
+                        </span>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-700">Identifikasi & Nomenklatur</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed font-medium">
+                        Mengidentifikasi struktur dan bagian penyusun rangka manusia (<strong>rangka aksial</strong> dan <strong>rangka apendikular</strong>) beserta nama ilmiah (<em>Latin</em>) dan jumlah masing-masing tulang hingga genap 206 tulang.
+                    </p>
+                </div>
+
+                <!-- TP 2 -->
+                <div class="p-5 rounded-2xl bg-slate-50/90 border border-slate-200 hover:border-indigo-400 transition group">
+                    <div class="flex items-center gap-3 mb-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-sm">
+                            02
+                        </span>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700">Klasifikasi & Karakteristik</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed font-medium">
+                        Menganalisis perbedaan karakteristik, klasifikasi bentuk tulang (<strong>tulang pipa, pipih, pendek, sesamoid, dan tidak beraturan</strong>), serta fungsi fisiologis setiap kelompok tulang.
+                    </p>
+                </div>
+
+                <!-- TP 3 -->
+                <div class="p-5 rounded-2xl bg-slate-50/90 border border-slate-200 hover:border-amber-400 transition group">
+                    <div class="flex items-center gap-3 mb-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-amber-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-sm">
+                            03
+                        </span>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700">Keterkaitan Struktur & Fungsi</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed font-medium">
+                        Menjelaskan keterkaitan anatomi rangka dengan perannya sebagai <strong>alat gerak pasif</strong>, penopang postur tubuh, tempat hematopoiesis (pembentukan sel darah), dan pelindung organ vital.
+                    </p>
+                </div>
+
+                <!-- TP 4 -->
+                <div class="p-5 rounded-2xl bg-slate-50/90 border border-slate-200 hover:border-emerald-400 transition group">
+                    <div class="flex items-center gap-3 mb-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-sm">
+                            04
+                        </span>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Asesmen Formatif Mandiri</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed font-medium">
+                        Mengevaluasi penguasaan konsep anatomi rangka manusia secara mandiri melalui kuis interaktif dan merefleksikan capaian hasil belajar pada daftar nilai kelas.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alur Belajar 3 Langkah & Tombol Mulai -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
+            <h3 class="font-display font-extrabold text-lg text-slate-900 mb-5">
+                Alur Aktivitas Pembelajaran di BioLab 3D
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 rounded-2xl bg-teal-50/70 border border-teal-200 flex items-start gap-3.5">
+                    <div class="w-9 h-9 rounded-xl bg-teal-600 text-white font-bold flex items-center justify-center shrink-0">1</div>
+                    <div>
+                        <h4 class="font-bold text-sm text-teal-950">Pahami Tujuan & Peta Konsep</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Cermati pembagian 80 tulang aksial dan 126 tulang apendikular melalui tabel rekapitulasi.</p>
+                    </div>
+                </div>
+                <div class="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200 flex items-start gap-3.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">2</div>
+                    <div>
+                        <h4 class="font-bold text-sm text-indigo-950">Eksplorasi Model Rangka 3D</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Putar model 360°, klik setiap bagian tulang, dan pelajari nama Latin, jumlah, serta fungsinya.</p>
+                    </div>
+                </div>
+                <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-start gap-3.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0">3</div>
+                    <div>
+                        <h4 class="font-bold text-sm text-emerald-950">Kerjakan Kuis & Cek Nilai</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Isi identitas (Nama & Kelas), selesaikan 10 soal HOTS, dan pantau skor akhir di Daftar Nilai.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
+                <button onclick="openInfoModal()" class="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition">
+                    Lihat Tabel Rekap 206 Tulang
+                </button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="switchMainTab('quiz')" class="px-5 py-3 rounded-xl border border-teal-600 text-teal-700 hover:bg-teal-50 text-xs sm:text-sm font-bold transition">
+                        Langsung ke Kuis Evaluasi
+                    </button>
+                    <button onclick="switchMainTab('explore')" class="px-6 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/20 transition flex items-center gap-2">
+                        <span>Mulai Eksplorasi Rangka 3D</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: EKSPLORASI RANGKA MANUSIA 3D INTERAKTIF                        -->
+    <!-- ===================================================================== -->
+    <section id="view-explore" class="flex-1 max-w-[1480px] w-full mx-auto px-4 sm:px-6 py-5 space-y-4">
+        <!-- Banner Ringkas Tujuan Pembelajaran (Dapat Ditutup) -->
+        <div id="compactTpBanner" class="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl px-4 sm:px-6 py-3.5 shadow-md border border-teal-700/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div class="flex items-start sm:items-center gap-3">
+                <span class="px-2.5 py-1 rounded-lg bg-teal-500/20 border border-teal-400/30 text-teal-300 font-mono font-bold text-xs shrink-0">
+                    TP • XI
+                </span>
+                <p class="text-xs sm:text-sm text-slate-100 leading-snug">
+                    <strong>Fokus Belajar:</strong> Identifikasi struktur rangka aksial (80) &amp; apendikular (126), nama ilmiah (<em>Latin</em>), jumlah, serta fungsi fisiologisnya pada model 3D.
+                </p>
+            </div>
+            <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+                <button onclick="switchMainTab('objectives')" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-teal-200 text-xs font-bold transition">
+                    Detail Tujuan Pembelajaran →
+                </button>
+                <button onclick="document.getElementById('compactTpBanner').classList.add('hidden')" title="Sembunyikan banner" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+            <!-- KOLOM KIRI (3 Kolom): Indeks 22 Kelompok Tulang -->
+            <aside class="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col order-2 lg:order-1 lg:sticky lg:top-20">
+                <div class="p-4 border-b border-slate-200 bg-slate-50/70">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <h2 class="font-display font-bold text-slate-800 text-xs uppercase tracking-wider">
+                            Indeks Anatomi (22 Bagian)
+                        </h2>
+                        <span id="boneCountBadge" class="text-[11px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                            22 Bagian
+                        </span>
+                    </div>
+
+                    <!-- Pencarian Cepat -->
+                    <div class="relative mb-2.5">
+                        <input type="text" id="searchInput" oninput="filterBoneList()" placeholder="Cari nama tulang / Latin..." 
+                            class="w-full pl-9 pr-3 py-2 text-sm bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Filter Kategori Aksial vs Apendikular -->
+                    <div class="grid grid-cols-3 gap-1 bg-slate-200/80 p-1 rounded-xl text-xs font-bold">
+                        <button onclick="setCategoryFilter('all')" id="filter-all" class="filter-btn py-1.5 px-2 rounded-lg bg-teal-600 text-white shadow-sm transition">
+                            Semua
+                        </button>
+                        <button onclick="setCategoryFilter('Aksial')" id="filter-Aksial" class="filter-btn py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition">
+                            Aksial (80)
+                        </button>
+                        <button onclick="setCategoryFilter('Apendikular')" id="filter-Apendikular" class="filter-btn py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition">
+                            Apend. (126)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daftar Tulang -->
+                <div id="boneListContainer" class="divide-y divide-slate-100 max-h-[380px] lg:max-h-[550px] overflow-y-auto">
+                    <!-- Diisi via JS -->
+                </div>
+            </aside>
+
+            <!-- KOLOM TENGAH (5 Kolom): Studio Rangka Manusia 3D -->
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col order-1 lg:order-2">
+                <!-- Toolbar Visual Bantu 3D -->
+                <div class="px-3.5 py-2.5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <!-- Toggle Label Terapung 3D -->
+                        <button id="btnTogglePins" onclick="toggleFloatingPins()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white shadow-sm hover:bg-teal-700 transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span id="pinBtnText">Label 3D: ON</span>
+                        </button>
+
+                        <!-- Toggle Warna Zona Aksial vs Apendikular -->
+                        <button id="btnToggleZones" onclick="toggleZoneColorMode()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 transition">
+                            <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-amber-500"></span>
+                            <span id="zoneBtnText">Warna Zona: OFF</span>
+                        </button>
+                    </div>
+
+                    <!-- Auto Rotate 360 -->
+                    <button id="btnAutoRotate" onclick="toggleAutoRotate()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 transition">
+                        <svg id="autoRotateIcon" class="w-3.5 h-3.5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span id="autoRotateText">Putar 360°</span>
+                    </button>
+                </div>
+
+                <!-- Legenda Warna Zona (Muncul saat Mode Warna Zona aktif) -->
+                <div id="zoneLegendBar" class="hidden px-4 py-1.5 bg-slate-900 text-white text-[11px] flex items-center justify-center gap-4 border-b border-slate-800">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span> Rangka Aksial (80 Tulang)</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Rangka Apendikular (126 Tulang)</span>
+                </div>
+
+                <!-- Area Kanvas WebGL Three.js -->
+                <div id="canvas-container" class="relative h-[560px] sm:h-[650px] overflow-hidden">
+                    <!-- Container Pin Label Terapung 3D -->
+                    <div id="floatingPinsLayer" class="absolute inset-0 pointer-events-none overflow-hidden z-10"></div>
+
+                    <!-- Tooltip Hover 3D -->
+                    <div id="tooltip3D" class="hidden fixed z-50 pointer-events-none bg-slate-900/95 backdrop-blur-md border border-teal-400 text-white px-3 py-2 rounded-xl shadow-xl text-xs transform -translate-x-1/2 -translate-y-full -mt-3">
+                        <p id="tt3DName" class="font-bold text-teal-300">Nama Tulang</p>
+                        <p id="tt3DLatin" class="italic text-slate-300 text-[11px]">Nama Latin</p>
+                        <p id="tt3DCount" class="text-[10px] text-amber-300 font-bold mt-0.5">Jumlah</p>
+                    </div>
+
+                    <!-- Kontrol Zoom (+) & (-) di Pojok Kanan Atas Kanvas -->
+                    <div class="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
+                        <button onclick="zoomCamera(-0.45)" title="Perbesar (Zoom In)" class="w-9 h-9 rounded-xl bg-white/90 hover:bg-teal-600 text-slate-800 hover:text-white border border-slate-300 shadow-md flex items-center justify-center font-bold text-lg transition">
+                            +
+                        </button>
+                        <button onclick="zoomCamera(0.45)" title="Perkecil (Zoom Out)" class="w-9 h-9 rounded-xl bg-white/90 hover:bg-teal-600 text-slate-800 hover:text-white border border-slate-300 shadow-md flex items-center justify-center font-bold text-lg transition">
+                            −
+                        </button>
+                    </div>
+
+                    <!-- Indikator Loading -->
+                    <div id="loadingOverlay" class="absolute inset-0 z-30 bg-slate-100 flex flex-col items-center justify-center gap-3 text-slate-700">
+                        <div class="w-10 h-10 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
+                        <p class="text-xs font-bold tracking-wide">Merakit Model Anatomi Rangka 3D...</p>
+                    </div>
+
+                    <!-- Bar Kontrol Sudut Pandang Kamera Bawah -->
+                    <div class="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-300 shadow-lg">
+                        <button onclick="setCameraPreset('front')" class="px-2.5 py-1.5 rounded-lg hover:bg-teal-600 text-slate-700 hover:text-white text-xs font-bold transition">
+                            Depan
+                        </button>
+                        <button onclick="setCameraPreset('back')" class="px-2.5 py-1.5 rounded-lg hover:bg-teal-600 text-slate-700 hover:text-white text-xs font-bold transition">
+                            Belakang
+                        </button>
+                        <button onclick="setCameraPreset('right')" class="px-2.5 py-1.5 rounded-lg hover:bg-teal-600 text-slate-700 hover:text-white text-xs font-bold transition">
+                            Kanan
+                        </button>
+                        <button onclick="setCameraPreset('left')" class="px-2.5 py-1.5 rounded-lg hover:bg-teal-600 text-slate-700 hover:text-white text-xs font-bold transition">
+                            Kiri
+                        </button>
+                        <button onclick="setCameraPreset('top')" class="px-2.5 py-1.5 rounded-lg hover:bg-teal-600 text-slate-700 hover:text-white text-xs font-bold transition">
+                            Atas
+                        </button>
+                        <button onclick="setCameraPreset('reset')" class="px-2.5 py-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-600 hover:text-white text-xs font-bold transition">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN (4 Kolom): Panel Penjelasan Anatomi Terperinci -->
+            <aside class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col order-3 lg:sticky lg:top-20">
+                <!-- Header Kartu Tulang -->
+                <div class="bg-gradient-to-br from-teal-700 via-teal-800 to-cyan-900 p-5 text-white">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <span id="detailCategoryBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/15 text-teal-100 border border-white/25 uppercase tracking-wider">
+                            Rangka Aksial
+                        </span>
+                        <span id="detailShapeBadge" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-black/25 text-slate-100">
+                            Tulang Pipih & Tidak Beraturan
+                        </span>
+                    </div>
+                    <h2 id="detailName" class="font-display font-extrabold text-xl sm:text-2xl text-white tracking-tight leading-tight">
+                        Tempurung Kepala (Kranium)
+                    </h2>
+                    <p id="detailLatin" class="text-teal-200 italic font-semibold text-sm sm:text-base mt-1 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <span>Neurocranium</span>
+                    </p>
+                </div>
+
+                <!-- Konten Penjelasan -->
+                <div class="p-5 space-y-4">
+                    <!-- Kotak Jumlah Tulang -->
+                    <div class="bg-teal-50/70 border border-teal-200 rounded-xl p-4">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <span class="text-xs font-bold uppercase tracking-wider text-teal-800">Jumlah Tulang</span>
+                            <span id="detailCountMain" class="text-sm sm:text-base font-display font-extrabold text-teal-900 bg-teal-200/70 px-3 py-0.5 rounded-lg">
+                                8 Tulang
+                            </span>
+                        </div>
+                        <p id="detailCountBreakdown" class="text-xs sm:text-sm text-slate-700 leading-relaxed mt-1.5">
+                            Rincian jumlah tulang.
+                        </p>
+                    </div>
+
+                    <!-- Rincian Tulang Penyusun & Nama Latin -->
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/>
+                            </svg>
+                            Bagian Penyusun & Nama Latin
+                        </h3>
+                        <ul id="detailSubBones" class="space-y-1.5 text-xs sm:text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                            <!-- Diisi via JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Letak & Fungsi Biologis -->
+                    <div class="space-y-3">
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Letak Anatomis</h3>
+                            <p id="detailLocation" class="text-xs sm:text-sm text-slate-700 leading-relaxed"></p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Fungsi Biologis</h3>
+                            <p id="detailFunction" class="text-xs sm:text-sm text-slate-700 leading-relaxed"></p>
+                        </div>
+
+                        <!-- Catatan Pengayaan Biologi SMA Kelas XI -->
+                        <div class="bg-indigo-50/80 border border-indigo-200/90 rounded-xl p-3.5">
+                            <h3 class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-800 mb-1 flex items-center gap-1.5">
+                                <span>🔬</span> Catatan Pengayaan Biologi SMA XI
+                            </h3>
+                            <p id="detailClinicalNote" class="text-xs text-indigo-950/90 leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- Navigasi Sebelumnya / Berikutnya -->
+                    <div class="pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+                        <button onclick="navigateBone(-1)" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-200 transition">
+                            ← Sebelumnya
+                        </button>
+                        <button onclick="navigateBone(1)" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 text-xs font-bold text-white hover:bg-teal-700 transition shadow-sm">
+                            Berikutnya →
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: KUIS EVALUASI PESERTA DIDIK (IDENTITAS + 10 SOAL + SERTIFIKAT) -->
+    <!-- ===================================================================== -->
+    <section id="view-quiz" class="hidden flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
+        
+        <!-- 2A. FORMULIR IDENTITAS PESERTA DIDIK -->
+        <div id="quiz-start-card" class="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-teal-700 to-cyan-800 p-6 sm:p-8 text-white">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/15 border border-white/25 uppercase tracking-wider">
+                    Evaluasi Pembelajaran Biologi
+                </span>
+                <h2 class="font-display font-extrabold text-2xl sm:text-3xl mt-3">
+                    Kuis Sistem Gerak Manusia (Rangka)
+                </h2>
+                <p class="text-teal-100 text-sm mt-1.5 max-w-2xl">
+                    Silakan lengkapi data pribadi peserta didik di bawah ini sebelum memulai pengerjaan kuis. Nilai akhir akan otomatis tersimpan ke dalam Daftar Nilai Kelas.
+                </p>
+            </div>
+
+            <form id="studentIdentityForm" onsubmit="startStudentQuiz(event)" class="p-6 sm:p-8 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-5">
+                    <!-- Nama Lengkap -->
+                    <div class="sm:col-span-7">
+                        <label for="studentNameInput" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Nama Lengkap Peserta Didik <span class="text-rose-600">*</span>
+                        </label>
+                        <input type="text" id="studentNameInput" required placeholder="Contoh: Muhammad Rizky Pratama"
+                            class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                    </div>
+
+                    <!-- Nomor Absen -->
+                    <div class="sm:col-span-5">
+                        <label for="studentAbsentInput" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Nomor Absen (Opsional)
+                        </label>
+                        <input type="number" id="studentAbsentInput" min="1" max="60" placeholder="Contoh: 14"
+                            class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                    </div>
+                </div>
+
+                <!-- Pilihan Kelas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label for="studentClassSelect" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Pilih Kelas <span class="text-rose-600">*</span>
+                        </label>
+                        <select id="studentClassSelect" onchange="toggleCustomClassInput()" required
+                            class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                            <option value="">-- Pilih Kelas Anda --</option>
+                            <option value="XI IPA 1">XI IPA 1</option>
+                            <option value="XI IPA 2">XI IPA 2</option>
+                            <option value="XI IPA 3">XI IPA 3</option>
+                            <option value="XI IPA 4">XI IPA 4</option>
+                            <option value="XI Fase F-1">XI Fase F-1 (Biologi)</option>
+                            <option value="XI Fase F-2">XI Fase F-2 (Biologi)</option>
+                            <option value="CUSTOM">Lainnya (Ketik Nama Kelas Manual)...</option>
+                        </select>
+                    </div>
+
+                    <div id="customClassWrapper" class="hidden">
+                        <label for="studentCustomClassInput" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Ketik Nama Kelas <span class="text-rose-600">*</span>
+                        </label>
+                        <input type="text" id="studentCustomClassInput" placeholder="Contoh: XI MIPA Unggulan"
+                            class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                    </div>
+                </div>
+
+                <!-- Informasi Kuis -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-3 gap-3 text-center">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase text-slate-400">Jumlah Soal</p>
+                        <p class="font-display font-extrabold text-lg text-slate-800">10 Soal PG</p>
+                    </div>
+                    <div class="border-x border-slate-200">
+                        <p class="text-[11px] font-bold uppercase text-slate-400">Skor Maksimal</p>
+                        <p class="font-display font-extrabold text-lg text-teal-700">100 Poin</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold uppercase text-slate-400">Materi Uji</p>
+                        <p class="font-display font-extrabold text-sm sm:text-base text-slate-800">Latin, Jumlah & Fungsi</p>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button type="button" onclick="switchMainTab('explore')" class="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 text-sm font-bold hover:bg-slate-50 transition">
+                        ← Pelajari Rangka 3D Dulu
+                    </button>
+                    <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-lg shadow-teal-600/20 transition flex items-center justify-center gap-2">
+                        <span>Mulai Kerjakan Kuis</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2B. AREA PENGERJAAN SOAL KUIS -->
+        <div id="quiz-active-card" class="hidden bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+            <!-- Header Progres & Identitas Siswa -->
+            <div class="bg-slate-900 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs text-teal-300 font-bold" id="activeQuizStudentInfo">Peserta: Nama Siswa • Kelas</p>
+                    <p class="font-display font-bold text-base sm:text-lg" id="activeQuizProgressText">Soal 1 dari 10</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-slate-800 border border-slate-700 px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-bold">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span id="quizTimerDisplay">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200 h-2">
+                <div id="quizProgressBar" class="bg-teal-600 h-2 transition-all duration-300" style="width: 10%"></div>
+            </div>
+
+            <!-- Badan Soal -->
+            <div class="p-6 sm:p-8">
+                <span id="questionCategoryTag" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 mb-3">
+                    Nomenklatur Latin
+                </span>
+                <h3 id="questionText" class="font-display font-bold text-lg sm:text-xl text-slate-900 leading-relaxed mb-6">
+                    Pertanyaan soal akan muncul di sini...
+                </h3>
+
+                <!-- Pilihan Jawaban A, B, C, D -->
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Diisi via JS -->
+                </div>
+
+                <!-- Navigasi Soal -->
+                <div class="mt-8 pt-5 border-t border-slate-200 flex items-center justify-between gap-3">
+                    <button id="btnPrevQuestion" onclick="prevQuestion()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold hover:bg-slate-100 disabled:opacity-40 transition">
+                        ← Soal Sebelumnya
+                    </button>
+
+                    <div class="flex items-center gap-1.5" id="questionDotsContainer">
+                        <!-- Indikator nomor soal -->
+                    </div>
+
+                    <button id="btnNextQuestion" onclick="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-bold shadow-sm transition">
+                        Selanjutnya →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2C. KARTU HASIL AKHIR & SERTIFIKAT NILAI PESERTA DIDIK -->
+        <div id="quiz-result-card" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border-2 border-teal-500 shadow-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-teal-700 via-teal-800 to-slate-900 p-6 sm:p-8 text-white text-center relative">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 text-slate-950 uppercase tracking-wider">
+                        Hasil Evaluasi Sistem Gerak
+                    </span>
+                    <h2 id="resStudentName" class="font-display font-extrabold text-2xl sm:text-3xl mt-3">
+                        Nama Peserta Didik
+                    </h2>
+                    <p id="resStudentMeta" class="text-teal-200 text-sm font-medium mt-1">
+                        Kelas XI IPA 1 • No. Absen: 12
+                    </p>
+
+                    <!-- Lingkaran Nilai Akhir -->
+                    <div class="mt-6 inline-flex flex-col items-center justify-center w-32 h-32 rounded-full bg-white text-slate-900 shadow-2xl border-4 border-amber-400">
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nilai Akhir</span>
+                        <span id="resFinalScore" class="font-display font-extrabold text-4xl text-teal-700 leading-none my-1">90</span>
+                        <span id="resPredicate" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Sangat Baik</span>
+                    </div>
+                </div>
+
+                <!-- Statistik Detail Jawaban -->
+                <div class="p-6 sm:p-8">
+                    <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
+                            <p class="text-xs font-bold text-emerald-700">Jawaban Benar</p>
+                            <p id="resCorrectCount" class="font-display font-extrabold text-2xl text-emerald-800 mt-0.5">9</p>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5">
+                            <p class="text-xs font-bold text-rose-700">Jawaban Salah</p>
+                            <p id="resWrongCount" class="font-display font-extrabold text-2xl text-rose-800 mt-0.5">1</p>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                            <p class="text-xs font-bold text-slate-600">Waktu Selesai</p>
+                            <p id="resDuration" class="font-display font-extrabold text-2xl text-slate-800 mt-0.5">01:45</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 text-xs sm:text-sm text-teal-900 flex items-center gap-3 mb-6">
+                        <span class="text-xl">✅</span>
+                        <p>Nilai Anda telah <strong>otomatis tersimpan</strong> ke dalam tabel <strong>Daftar Nilai Peserta Didik</strong>.</p>
+                    </div>
+
+                    <!-- Tombol Aksi Pasca Kuis -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <button onclick="switchMainTab('scores')" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition">
+                            Lihat Peringkat di Daftar Nilai →
+                        </button>
+                        <button onclick="resetQuizToForm()" class="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-sm font-bold transition">
+                            Kerjakan Kuis Ulang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pembahasan Jawaban -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                <h3 class="font-display font-bold text-lg text-slate-900 mb-4">Pembahasan & Kunci Jawaban</h3>
+                <div id="quizReviewContainer" class="space-y-4">
+                    <!-- Diisi via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: DAFTAR NILAI PESERTA DIDIK (REKAP NILAI KELAS & EKSPOR CSV)    -->
+    <!-- ===================================================================== -->
+    <section id="view-scores" class="hidden flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <!-- Header & Statistik Kelas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div>
+                    <h2 class="font-display font-extrabold text-2xl text-slate-900">
+                        Daftar Nilai Evaluasi Sistem Gerak
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-0.5">
+                        Rekapitulasi nilai akhir peserta didik berdasarkan kelas dan hasil kuis anatomi rangka.
+                    </p>
+                </div>
+
+                <!-- Tombol Aksi Guru & Siswa -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="switchMainTab('quiz')" class="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition">
+                        + Ikuti Kuis Sekarang
+                    </button>
+                    <button onclick="exportScoresToCSV()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <span>Unduh CSV / Excel</span>
+                    </button>
+                    <button onclick="confirmClearScores()" class="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
+                        Reset Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kartu Ringkasan Statistik -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p class="text-xs font-bold text-slate-500">Total Peserta</p>
+                    <p id="statTotalStudents" class="font-display font-extrabold text-2xl text-slate-900 mt-1">0</p>
+                </div>
+                <div class="bg-teal-50 border border-teal-200 rounded-xl p-4">
+                    <p class="text-xs font-bold text-teal-700">Rata-Rata Nilai</p>
+                    <p id="statAvgScore" class="font-display font-extrabold text-2xl text-teal-800 mt-1">0</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <p class="text-xs font-bold text-amber-700">Nilai Tertinggi</p>
+                    <p id="statMaxScore" class="font-display font-extrabold text-2xl text-amber-800 mt-1">0</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <p class="text-xs font-bold text-emerald-700">Ketuntasan (≥75)</p>
+                    <p id="statPassRate" class="font-display font-extrabold text-2xl text-emerald-800 mt-1">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Pencarian Tabel Nilai -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <!-- Cari Nama Siswa -->
+                <div class="relative flex-1 max-w-md">
+                    <input type="text" id="scoreSearchInput" oninput="renderScoreboardTable()" placeholder="Cari nama peserta didik..."
+                        class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+
+                <!-- Filter Kelas & Urutan -->
+                <div class="flex items-center gap-2">
+                    <select id="scoreClassFilter" onchange="renderScoreboardTable()" class="px-3 py-2 text-xs sm:text-sm font-semibold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="ALL">Semua Kelas</option>
+                    </select>
+
+                    <select id="scoreSortSelect" onchange="renderScoreboardTable()" class="px-3 py-2 text-xs sm:text-sm font-semibold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="newest">Terbaru</option>
+                        <option value="highest">Nilai Tertinggi</option>
+                        <option value="name">Nama (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabel Daftar Nilai -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 text-[11px] font-extrabold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3.5 px-4">No</th>
+                            <th class="py-3.5 px-4">Nama Peserta Didik</th>
+                            <th class="py-3.5 px-4">Kelas</th>
+                            <th class="py-3.5 px-4 text-center">Absen</th>
+                            <th class="py-3.5 px-4 text-center">Benar/Salah</th>
+                            <th class="py-3.5 px-4 text-center">Nilai Akhir</th>
+                            <th class="py-3.5 px-4">Predikat</th>
+                            <th class="py-3.5 px-4">Waktu Pengerjaan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreboardTableBody" class="divide-y divide-slate-100 text-sm">
+                        <!-- Diisi via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL TABEL REKAPITULASI 206 TULANG                                   -->
+    <!-- ===================================================================== -->
+    <div id="infoModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="font-display font-bold text-lg">Rekapitulasi 206 Tulang Manusia Dewasa</h3>
+                    <p class="text-xs text-slate-300">Rangka Aksial (80 Tulang) + Rangka Apendikular (126 Tulang)</p>
+                </div>
+                <button onclick="closeInfoModal()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-5 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="border border-indigo-200 bg-indigo-50/60 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h4 class="font-bold text-indigo-900">1. Rangka Aksial (Sumbu)</h4>
+                            <span class="px-2.5 py-0.5 bg-indigo-600 text-white text-xs font-bold rounded-full">80 Tulang</span>
+                        </div>
+                        <ul class="space-y-1.5 text-xs text-slate-700">
+                            <li class="flex justify-between"><span>• Tempurung Kepala (Kranium)</span> <strong class="text-slate-900">8</strong></li>
+                            <li class="flex justify-between"><span>• Tulang Wajah & Rahang Bawah</span> <strong class="text-slate-900">14</strong></li>
+                            <li class="flex justify-between"><span>• Tulang Pendengaran (6) & Hyoid (1)</span> <strong class="text-slate-900">7</strong></li>
+                            <li class="flex justify-between"><span>• Ruas Tulang Belakang (Vertebrae)</span> <strong class="text-slate-900">26</strong></li>
+                            <li class="flex justify-between"><span>• Tulang Dada (Sternum)</span> <strong class="text-slate-900">1</strong></li>
+                            <li class="flex justify-between"><span>• Tulang Rusuk (Costae - 12 pasang)</span> <strong class="text-slate-900">24</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="border border-amber-200 bg-amber-50/60 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h4 class="font-bold text-amber-900">2. Rangka Apendikular</h4>
+                            <span class="px-2.5 py-0.5 bg-amber-600 text-white text-xs font-bold rounded-full">126 Tulang</span>
+                        </div>
+                        <ul class="space-y-1.5 text-xs text-slate-700">
+                            <li class="flex justify-between"><span>• Gelang Bahu (2 Selangka + 2 Belikat)</span> <strong class="text-slate-900">4</strong></li>
+                            <li class="flex justify-between"><span>• Lengan (2 Humerus, 2 Radius, 2 Ulna)</span> <strong class="text-slate-900">6</strong></li>
+                            <li class="flex justify-between"><span>• Tangan (16 Karpal, 10 Metakarpal, 28 Falanges)</span> <strong class="text-slate-900">54</strong></li>
+                            <li class="flex justify-between"><span>• Gelang Panggul (Ossa Coxae)</span> <strong class="text-slate-900">2</strong></li>
+                            <li class="flex justify-between"><span>• Tungkai (2 Femur, 2 Patella, 2 Tibia, 2 Fibula)</span> <strong class="text-slate-900">8</strong></li>
+                            <li class="flex justify-between"><span>• Kaki (14 Tarsal, 10 Metatarsal, 28 Falanges)</span> <strong class="text-slate-900">52</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-teal-50 border border-teal-200 p-4 rounded-xl text-xs text-teal-900 leading-relaxed">
+                    <strong>Catatan Anatomi:</strong> Bayi yang baru lahir memiliki sekitar <strong>270–300 tulang</strong>. Selama masa pertumbuhan hingga dewasa, beberapa tulang mengalami osifikasi dan fusi (seperti 5 ruas sakrum menjadi 1, 4 ruas koksigis menjadi 1, serta ilium-iskium-pubis menyatu menjadi os coxae) sehingga berjumlah tepat <strong>206 tulang</strong>.
+                </div>
+            </div>
+
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button onclick="closeInfoModal()" class="px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition">
+                    Tutup Tabel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Reset Data Nilai -->
+    <div id="confirmResetModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <h3 class="font-display font-bold text-lg text-slate-900">Hapus Semua Daftar Nilai?</h3>
+            <p class="text-sm text-slate-600 mt-2">
+                Tindakan ini akan menghapus seluruh riwayat nilai kuis peserta didik yang tersimpan di browser ini. Data yang dihapus tidak dapat dikembalikan.
+            </p>
+            <div class="mt-6 flex items-center justify-end gap-2.5">
+                <button onclick="closeConfirmResetModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100">
+                    Batal
+                </button>
+                <button onclick="executeClearScores()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">
+                    Ya, Hapus Semua
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCRIPT DATABASE BIOLOGI, ENGINE 3D & SISTEM KUIS PESERTA DIDIK        -->
+    <!-- ===================================================================== -->
+    <script>
+        // =====================================================================
+        // 1. DATABASE 22 KELOMPOK TULANG LENGKAP (80 AKSIAL + 126 APENDIKULAR = 206)
+        // =====================================================================
+        const BONES_DATA = [
+            {
+                id: 'cranium',
+                name: 'Tempurung Kepala (Kranium)',
+                latin: 'Neurocranium',
+                category: 'Aksial',
+                shape: 'Tulang Pipih (Ossa Plana)',
+                countMain: '8 Tulang',
+                countBreakdown: 'Terdiri dari 8 tulang pipih yang saling bertautan erat membentuk sendi mati (sinartrosis sutura) untuk melindungi otak.',
+                subBones: [
+                    '<strong>Tulang Dahi (Os Frontale):</strong> 1 tulang pembentuk dahi dan atap rongga mata',
+                    '<strong>Tulang Ubun-ubun (Os Parietale):</strong> 2 tulang (kanan & kiri) membentuk puncak dan sisi atas kepala',
+                    '<strong>Tulang Pelipis (Os Temporale):</strong> 2 tulang (kanan & kiri) di sisi samping kepala sekitar telinga',
+                    '<strong>Tulang Kepala Belakang (Os Occipitale):</strong> 1 tulang di bagian belakang & dasar tengkorak (terdapat foramen magnum)',
+                    '<strong>Tulang Baji (Os Sphenoidale):</strong> 1 tulang berbentuk kupu-kupu di dasar tengkorak',
+                    '<strong>Tulang Tapis (Os Ethmoidale):</strong> 1 tulang berongga di antara rongga mata dan atap rongga hidung'
+                ],
+                location: 'Bagian atas dan belakang kepala, membentuk kotak pelindung rongga tengkorak (cavitas cranii).',
+                function: 'Melindungi organ vital otak dari benturan mekanik serta menjadi tempat perlekatan selaput otak (meninges) dan otot kepala.',
+                clinicalNote: 'Pada bayi baru lahir terdapat celah lunak di antara tulang tengkorak yang disebut fontanel (ubun-ubun) untuk memberi ruang pertumbuhan pesat otak sebelum menutup sempurna melalui proses osifikasi intramembranosa.',
+                focusY: 2.38,
+                pinPos: [0.0, 2.49, 0.05]
+            },
+            {
+                id: 'facial',
+                name: 'Tulang Wajah & Rahang Bawah',
+                latin: 'Viscerocranium & Mandibula',
+                category: 'Aksial',
+                shape: 'Tulang Tidak Beraturan (Irregular)',
+                countMain: '14 Tulang',
+                countBreakdown: 'Terdiri dari 13 tulang wajah yang menyatu dan 1 tulang rahang bawah (mandibula) yang dapat digerakkan.',
+                subBones: [
+                    '<strong>Rahang Atas (Maxilla):</strong> 2 tulang penyusun langit-langit mulut depan dan tempat gigi atas',
+                    '<strong>Rahang Bawah (Mandibula):</strong> 1 tulang terbesar & terkuat di wajah (satu-satunya tulang tengkorak yang dapat bergerak)',
+                    '<strong>Tulang Pipi (Os Zygomaticum):</strong> 2 tulang pembentuk tonjolan pipi kanan dan kiri',
+                    '<strong>Tulang Hidung (Os Nasale):</strong> 2 tulang kecil pembentuk pangkal batang hidung',
+                    '<strong>Tulang Air Mata (Os Lacrimale):</strong> 2 tulang tipis di sudut dalam rongga mata',
+                    '<strong>Langit-langit (Os Palatinum):</strong> 2 tulang pembentuk langit-langit keras bagian belakang',
+                    '<strong>Konka Nasal Inferior:</strong> 2 tulang melengkung di dalam dinding samping rongga hidung',
+                    '<strong>Tulang Sekat Hidung (Vomer):</strong> 1 tulang pipih pembentuk sekat rongga hidung bagian bawah'
+                ],
+                location: 'Bagian depan bawah tengkorak (anterior), membentuk struktur wajah, rongga mata, rongga hidung, dan rongga mulut.',
+                function: 'Membentuk kontur wajah manusia, melindungi bola mata dan saluran pernapasan awal, serta memungkinkan proses mengunyah dan berbicara.',
+                clinicalNote: 'Mandibula bersendi dengan tulang temporal membentuk sendi temporomandibular (TMJ)—satu-satunya sendi gerak (diartrosis) pada struktur tengkorak.',
+                focusY: 2.24,
+                pinPos: [0.09, 2.24, 0.14]
+            },
+            {
+                id: 'ear_hyoid',
+                name: 'Tulang Pendengaran & Hyoid',
+                latin: 'Ossicula Auditus & Os Hyoideum',
+                category: 'Aksial',
+                shape: 'Tulang Pendek & Tidak Beraturan',
+                countMain: '7 Tulang (6 + 1)',
+                countBreakdown: 'Terdiri dari 6 tulang pendengaran sangat kecil di dalam telinga tengah (3 kanan + 3 kiri) dan 1 tulang lidah (hyoid) berbentuk huruf U di leher atas.',
+                subBones: [
+                    '<strong>Tulang Martil (Malleus):</strong> 2 tulang (kanan & kiri), menempel pada gendang telinga',
+                    '<strong>Tulang Landasan (Incus):</strong> 2 tulang (kanan & kiri), penghubung antara maleus dan stapes',
+                    '<strong>Tulang Sanggurdi (Stapes):</strong> 2 tulang (kanan & kiri), tulang terkecil di tubuh manusia (±2,8 mm)',
+                    '<strong>Tulang Lidah (Os Hyoideum):</strong> 1 tulang berbentuk tapal kuda di bawah rahang bawah (tidak bersendi langsung dengan tulang lain)'
+                ],
+                location: 'Osikula berada di dalam rongga telinga tengah (tulang temporal), sedangkan tulang hyoid berada di leher bagian atas di antara dagu dan laring.',
+                function: 'Osikula menghantarkan dan memperkuat getaran gelombang suara menuju koklea; tulang hyoid menopang pangkal lidah dan laring saat menelan serta berbicara.',
+                clinicalNote: 'Os hyoideum adalah satu-satunya tulang di tubuh manusia yang tidak berartikulasi (bersendi) langsung dengan tulang lain, melainkan ditahan oleh jaringan otot dan ligamen.',
+                focusY: 2.18,
+                pinPos: [-0.11, 2.22, 0.03]
+            },
+            {
+                id: 'vertebrae',
+                name: 'Ruas Tulang Belakang',
+                latin: 'Columna Vertebralis',
+                category: 'Aksial',
+                shape: 'Tulang Tidak Beraturan (Irregular)',
+                countMain: '26 Tulang (Dewasa)',
+                countBreakdown: 'Saat bayi berjumlah 33 ruas. Pada orang dewasa, 5 ruas sakrum menyatu menjadi 1 dan 4 ruas ekor menyatu menjadi 1 sehingga menjadi 26 tulang.',
+                subBones: [
+                    '<strong>Tulang Leher (Vertebrae Cervicales):</strong> 7 ruas (C1 = Atlas, C2 = Aksis, hingga C7)',
+                    '<strong>Tulang Punggung (Vertebrae Thoracicae):</strong> 12 ruas (T1–T12), tempat melekatnya 12 pasang tulang rusuk',
+                    '<strong>Tulang Pinggang (Vertebrae Lumbales):</strong> 5 ruas (L1–L5), berukuran paling besar dan tebal untuk menopang beban',
+                    '<strong>Tulang Kelangkang (Os Sacrum):</strong> 1 tulang segitiga melengkung (hasil fusi 5 ruas)',
+                    '<strong>Tulang Ekor (Os Coccygis):</strong> 1 tulang kecil di ujung bawah (hasil fusi 4 ruas)'
+                ],
+                location: 'Membentang vertikal di garis tengah punggung (dorsal) dari dasar tengkorak hingga gelang panggul dengan kurva huruf S alami.',
+                function: 'Menopang berat kepala dan tubuh bagian atas, menjaga keseimbangan postur tegak, memungkinkan gerakan fleksibel, dan melindungi sumsum tulang belakang (medulla spinalis).',
+                clinicalNote: 'Kelainan lengkung tulang belakang meliputi skoliosis (melengkung ke samping), kifosis (bungkuk ke belakang), dan lordosis (melengkung berlebihan ke depan).',
+                focusY: 1.58,
+                pinPos: [0.0, 1.52, -0.09]
+            },
+            {
+                id: 'sternum',
+                name: 'Tulang Dada',
+                latin: 'Sternum',
+                category: 'Aksial',
+                shape: 'Tulang Pipih (Ossa Plana)',
+                countMain: '1 Tulang (3 Bagian)',
+                countBreakdown: 'Satu tulang pipih memanjang di tengah dada bagian depan yang tersusun atas tiga segmen yang menyatu.',
+                subBones: [
+                    '<strong>Hulu (Manubrium Sterni):</strong> bagian atas berbentuk segiempat, bersendi dengan klavikula dan rusuk ke-1',
+                    '<strong>Badan (Corpus Sterni):</strong> bagian tengah terpanjang, tempat melekatnya kartilago rusuk ke-2 sampai ke-7',
+                    '<strong>Taju Pedang (Processus Xiphoideus):</strong> ujung bawah meruncing yang awalnya berupa tulang rawan'
+                ],
+                location: 'Terletak tepat di garis tengah bagian depan rongga dada (anterior toraks).',
+                function: 'Melindungi organ jantung, paru-paru, dan pembuluh darah aorta di belakangnya, serta menjadi jangkar depan bagi tulang rusuk sejati.',
+                clinicalNote: 'Karena berisi sumsum tulang merah aktif hingga dewasa, sternum sering menjadi lokasi biopsi sumsum tulang untuk diagnosis kelainan sel darah.',
+                focusY: 1.78,
+                pinPos: [0.0, 1.79, 0.14]
+            },
+            {
+                id: 'ribs',
+                name: 'Tulang Rusuk & Kartilago',
+                latin: 'Costae & Cartilago Costalis',
+                category: 'Aksial',
+                shape: 'Tulang Pipih Melengkung',
+                countMain: '24 Tulang (12 Pasang)',
+                countBreakdown: 'Terdiri dari 12 pasang tulang rusuk simetris di kanan dan kiri yang dihubungkan ke sternum oleh tulang rawan hialin (kartilago kosta).',
+                subBones: [
+                    '<strong>Rusuk Sejati (Costae Verae):</strong> 7 pasang (14 tulang, pasang ke-1 s.d. 7), melekat langsung ke sternum lewat kartilago kosta',
+                    '<strong>Rusuk Palsu (Costae Spuriae):</strong> 3 pasang (6 tulang, pasang ke-8 s.d. 10), kartilagonya menempel pada tulang rawan rusuk ke-7',
+                    '<strong>Rusuk Melayang (Costae Fluctuantes):</strong> 2 pasang (4 tulang, pasang ke-11 & 12), ujung depannya bebas melayang tidak mencapai sternum'
+                ],
+                location: 'Melingkari rongga dada dari ruas tulang punggung (toraks) di belakang menuju tulang dada di depan.',
+                function: 'Membentuk sangkar dada (cavea thoracis) untuk melindungi jantung & paru-paru, serta mengembang-mengempis saat pernapasan dada.',
+                clinicalNote: 'Elastisitas tulang rawan hialin pada kartilago kosta memungkinkan rongga dada membesar saat otot antartulang rusuk luar (interkostalis eksternus) berkontraksi.',
+                focusY: 1.72,
+                pinPos: [-0.15, 1.74, 0.08]
+            },
+            {
+                id: 'clavicle',
+                name: 'Tulang Selangka',
+                latin: 'Clavicula',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Melengkung (S)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang di sisi bahu kanan dan 1 tulang di sisi bahu kiri. Bersama skapula membentuk gelang bahu (cingulum pectorale).',
+                subBones: [
+                    '<strong>Ujung Sternal (Extremitas Sternalis):</strong> ujung bagian dalam yang bersendi dengan manubrium sternum',
+                    '<strong>Ujung Akromial (Extremitas Acromialis):</strong> ujung luar yang bersendi dengan akromion skapula'
+                ],
+                location: 'Terletak mendatar di bagian depan atas dada, tepat di pangkal leher dan di atas tulang rusuk pertama.',
+                function: 'Menahan posisi bahu agar lengan dapat berayun bebas di samping tubuh dan menyalurkan gaya mekanis dari lengan ke rangka aksial.',
+                clinicalNote: 'Klavikula merupakan tulang pertama yang mulai mengalami proses osifikasi pada embrio manusia, namun juga tulang yang paling sering mengalami fraktur saat terjatuh bertumpu pada tangan.',
+                focusY: 1.96,
+                pinPos: [0.12, 1.98, 0.11]
+            },
+            {
+                id: 'scapula',
+                name: 'Tulang Belikat',
+                latin: 'Scapula',
+                category: 'Apendikular',
+                shape: 'Tulang Pipih Segitiga',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang pipih berbentuk segitiga di punggung atas kanan dan 1 di punggung atas kiri.',
+                subBones: [
+                    '<strong>Rongga Glenoid (Cavitas Glenoidalis):</strong> mangkuk sendi tempat kepala humerus menempel',
+                    '<strong>Spina Skapula & Akromion:</strong> tonjolan tulang di bagian belakang yang membentuk puncak bahu',
+                    '<strong>Prosesus Korakoideus:</strong> tonjolan paruh gagak di depan atas tempat melekatnya tendon otot'
+                ],
+                location: 'Terletak di punggung atas (posterior toraks), menutupi permukaan luar tulang rusuk ke-2 hingga ke-7.',
+                function: 'Menghubungkan tulang lengan atas dengan tulang selangka dan menjadi tempat perlekatan 17 otot penggerak bahu dan lengan.',
+                clinicalNote: 'Rongga glenoid pada skapula bersifat dangkal sehingga sendi bahu memiliki rentang gerak paling luas di tubuh manusia, namun relatif lebih rentan mengalami dislokasi.',
+                focusY: 1.86,
+                pinPos: [-0.16, 1.87, -0.11]
+            },
+            {
+                id: 'humerus',
+                name: 'Tulang Lengan Atas',
+                latin: 'Humerus',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa (Ossa Longa)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: 'Tulang terpanjang dan terbesar pada anggota gerak atas (1 di lengan kanan, 1 di lengan kiri).',
+                subBones: [
+                    '<strong>Kepala Humerus (Caput Humeri):</strong> bonggol bulat yang masuk ke rongga glenoid skapula (sendi peluru)',
+                    '<strong>Batang Humerus (Corpus Humeri):</strong> memiliki tuberositas deltoidea tempat melekatnya otot bahu',
+                    '<strong>Kondilus Bawah (Trochlea & Capitulum):</strong> ujung bawah yang bersendi dengan ulna dan radius pada siku'
+                ],
+                location: 'Membentang di bagian lengan atas dari sendi bahu hingga ke sendi siku.',
+                function: 'Menjadi tuas penggerak utama lengan atas serta tempat perlekatan otot bisep, trisep, pektoralis, dan deltoid.',
+                clinicalNote: 'Sebagai tulang pipa, bagian diafisis humerus memiliki rongga medula berisi sumsum kuning, sedangkan epifisisnya tersusun atas tulang spons berisi sumsum merah.',
+                focusY: 1.66,
+                pinPos: [0.26, 1.72, 0.02]
+            },
+            {
+                id: 'radius',
+                name: 'Tulang Pengumpil',
+                latin: 'Radius',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa (Ossa Longa)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang di lengan bawah kanan dan 1 di lengan bawah kiri, posisinya selalu sejajar dengan ibu jari (sisi lateral).',
+                subBones: [
+                    '<strong>Kepala Radius (Caput Radii):</strong> ujung atas berbentuk cakram bulat untuk gerakan memutar',
+                    '<strong>Prosesus Stiloideus Radii:</strong> ujung bawah lebar yang bersendi langsung dengan tulang pergelangan tangan'
+                ],
+                location: 'Terletak di sisi luar (lateral) lengan bawah, lurus searah dengan posisi ibu jari.',
+                function: 'Memungkinkan lengan bawah berputar (gerakan pronasi menelungkup dan supinasi menengadah) serta membentuk bagian utama sendi pergelangan tangan.',
+                clinicalNote: 'Saat tangan melakukan gerakan pronasi (menelungkup), tulang radius berputar menyilang di atas tulang ulna berkat sendi putar (articulatio radioulnaris).',
+                focusY: 1.32,
+                pinPos: [0.31, 1.34, 0.05]
+            },
+            {
+                id: 'ulna',
+                name: 'Tulang Hasta',
+                latin: 'Ulna',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa (Ossa Longa)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang di lengan bawah kanan dan 1 di lengan bawah kiri, posisinya sejajar dengan jari kelingking (sisi medial).',
+                subBones: [
+                    '<strong>Olekranon (Olecranon):</strong> tonjolan tulang di ujung atas yang membentuk siku saat lengan ditekuk',
+                    '<strong>Incisura Trochlearis:</strong> cekungan berbentuk kunci pas yang mengunci pada troklea humerus'
+                ],
+                location: 'Terletak di sisi dalam (medial) lengan bawah, lurus searah dengan jari kelingking.',
+                function: 'Membentuk sendi engsel pada siku untuk menekuk dan meluruskan lengan serta menjadi poros stabil saat radius berputar.',
+                clinicalNote: 'Tonjolan olekranon pada ujung proksimal ulna menahan lengan bawah agar tidak menekuk ke belakang secara berlebihan (hiperekstensi) pada sendi siku.',
+                focusY: 1.32,
+                pinPos: [0.25, 1.34, 0.01]
+            },
+            {
+                id: 'carpal',
+                name: 'Tulang Pergelangan Tangan',
+                latin: 'Ossa Carpi (Carpal)',
+                category: 'Apendikular',
+                shape: 'Tulang Pendek (Ossa Brevia)',
+                countMain: '16 Tulang (8 per tangan)',
+                countBreakdown: 'Tersusun atas 2 baris (masing-masing 4 tulang kecil) pada setiap pergelangan tangan (8 kanan + 8 kiri = 16 tulang).',
+                subBones: [
+                    '<strong>Baris Proksimal (4):</strong> Scaphoideum, Lunatum, Triquetrum, Pisiforme',
+                    '<strong>Baris Distal (4):</strong> Trapezium, Trapezoideum, Capitatum, Hamatum'
+                ],
+                location: 'Terletak di pangkal tangan, menghubungkan ujung bawah radius-ulna dengan telapak tangan.',
+                function: 'Memberikan fleksibilitas tinggi pada pergelangan tangan melalui mekanisme sendi geser (luncur).',
+                clinicalNote: 'Susunan melengkung tulang-tulang karpal membentuk terowongan karpal (carpal tunnel) yang dilalui tendon otot fleksor dan saraf medianus.',
+                focusY: 1.12,
+                pinPos: [0.30, 1.14, 0.05]
+            },
+            {
+                id: 'metacarpal',
+                name: 'Tulang Telapak Tangan',
+                latin: 'Ossa Metacarpi (Metacarpal)',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Pendek',
+                countMain: '10 Tulang (5 per tangan)',
+                countBreakdown: 'Terdiri dari 5 tulang pipa ramping pada masing-masing telapak tangan (diberi nomor I–V dari sisi ibu jari ke kelingking).',
+                subBones: [
+                    '<strong>Metakarpal I:</strong> tulang telapak di pangkal ibu jari (membentuk sendi pelana yang sangat bebas)',
+                    '<strong>Metakarpal II–V:</strong> membentuk kerangka utama punggung dan telapak tangan'
+                ],
+                location: 'Terletak di bagian tengah tangan, menghubungkan tulang karpal dengan pangkal jari tangan.',
+                function: 'Membentuk struktur telapak tangan dan menjadi tumpuan mekanik saat menggenggam atau menahan benda.',
+                clinicalNote: 'Pertemuan antara tulang karpal (trapezium) dan metakarpal I membentuk sendi pelana yang memungkinkan gerakan oposisi ibu jari pada manusia.',
+                focusY: 1.06,
+                pinPos: [0.31, 1.08, 0.06]
+            },
+            {
+                id: 'hand_phalanges',
+                name: 'Tulang Jari Tangan',
+                latin: 'Phalanges Manus',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Pendek',
+                countMain: '28 Tulang (14 per tangan)',
+                countBreakdown: 'Ibu jari (pollex) memiliki 2 ruas (proksimal & distal), sedangkan 4 jari lainnya memiliki 3 ruas (proksimal, media, distal) = 14 ruas per tangan.',
+                subBones: [
+                    '<strong>Phalanx Proximalis:</strong> 5 ruas pangkal jari pada tiap tangan',
+                    '<strong>Phalanx Media:</strong> 4 ruas tengah jari pada tiap tangan (tidak ada pada ibu jari)',
+                    '<strong>Phalanx Distalis:</strong> 5 ruas ujung jari pada tiap tangan'
+                ],
+                location: 'Terletak di ujung paling distal anggota gerak atas.',
+                function: 'Melakukan gerakan motorik halus yang presisi seperti menggenggam, menulis, menjepit, dan meraba.',
+                clinicalNote: 'Sendi antar-ruas jari (interphalangeal) merupakan contoh klasik sendi engsel (ginglimus) yang bekerja dalam satu bidang gerak.',
+                focusY: 0.98,
+                pinPos: [0.31, 0.99, 0.07]
+            },
+            {
+                id: 'pelvis',
+                name: 'Tulang Gelang Panggul',
+                latin: 'Ossa Coxae / Pelvis',
+                category: 'Apendikular',
+                shape: 'Tulang Pipih & Tidak Beraturan',
+                countMain: '2 Tulang Panggul (6 Fusi)',
+                countBreakdown: 'Pada orang dewasa terdiri dari 2 tulang pinggul besar (os coxae kanan & kiri) yang masing-masing terbentuk dari penyatuan 3 tulang (ilium, iskium, pubis).',
+                subBones: [
+                    '<strong>Tulang Usus (Os Ilium):</strong> bagian sayap atas yang lebar dengan krista iliaka di tepinya',
+                    '<strong>Tulang Duduk (Os Ischium):</strong> bagian bawah belakang yang menopang berat badan saat duduk',
+                    '<strong>Tulang Kemaluan (Os Pubis):</strong> bagian depan yang bertemu di tengah membentuk simfisis pubis',
+                    '<strong>Asetabulum (Acetabulum):</strong> mangkuk sendi dalam tempat kepala tulang paha masuk'
+                ],
+                location: 'Terletak di bagian bawah batang tubuh, menghubungkan tulang belakang (sakrum) dengan kedua tungkai bawah.',
+                function: 'Menyangga berat tubuh bagian atas, melindungi organ pencernaan bawah, kandung kemih, serta organ reproduksi.',
+                clinicalNote: 'Secara anatomis, gelang panggul wanita memiliki sudut subpubis lebih lebar (>90°) dan rongga panggul lebih luas dibandingkan pria sebagai adaptasi proses melahirkan.',
+                focusY: 1.18,
+                pinPos: [-0.14, 1.22, 0.04]
+            },
+            {
+                id: 'femur',
+                name: 'Tulang Paha',
+                latin: 'Femur',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa (Ossa Longa)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: 'Merupakan tulang terpanjang, terberat, dan terkuat di seluruh tubuh manusia (1 di paha kanan, 1 di paha kiri).',
+                subBones: [
+                    '<strong>Kepala & Leher Femur (Caput & Collum Femoris):</strong> masuk ke mangkuk asetabulum panggul membentuk sendi peluru',
+                    '<strong>Trokanter Mayor & Minor:</strong> tonjolan besar tempat melekatnya otot paha dan bokong',
+                    '<strong>Kondilus Medialis & Lateralis:</strong> bonggol bawah yang bersendi dengan tulang kering di lutut'
+                ],
+                location: 'Membentang di paha dari sendi panggul hingga ke sendi lutut.',
+                function: 'Menopang seluruh berat badan bagian atas saat berdiri, berjalan, berlari, dan melompat.',
+                clinicalNote: 'Panjang tulang femur rata-rata mencapai seperempat tinggi badan manusia dan mampu menahan gaya tekan hingga beberapa kali berat tubuh.',
+                focusY: 0.85,
+                pinPos: [0.14, 0.86, 0.03]
+            },
+            {
+                id: 'patella',
+                name: 'Tulang Tempurung Lutut',
+                latin: 'Patella',
+                category: 'Apendikular',
+                shape: 'Tulang Sesamoid (Segitiga)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang di lutut kanan dan 1 tulang di lutut kiri. Merupakan tulang sesamoid terbesar yang tertanam di dalam tendon.',
+                subBones: [
+                    '<strong>Basis Patellae:</strong> tepi atas yang melekat pada tendon otot kuadrisep femoris',
+                    '<strong>Apex Patellae:</strong> ujung bawah yang terhubung ke ligamen patela menuju tulang kering'
+                ],
+                location: 'Terletak di bagian depan (anterior) sendi lutut.',
+                function: 'Melindungi bagian depan sendi lutut dari benturan langsung dan meningkatkan daya ungkit mekanis otot paha saat meluruskan kaki.',
+                clinicalNote: 'Tanpa patella, tendon kuadrisep akan bergesekan langsung dengan ujung bawah femur dan kehilangan efisiensi momen gaya sekitar 30%.',
+                focusY: 0.59,
+                pinPos: [-0.12, 0.59, 0.07]
+            },
+            {
+                id: 'tibia',
+                name: 'Tulang Kering',
+                latin: 'Tibia',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa (Ossa Longa)',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: 'Tulang terbesar kedua di tubuh manusia setelah tulang paha (1 di tungkai kanan, 1 di tungkai kiri).',
+                subBones: [
+                    '<strong>Dataran Atas (Condylus Tibiae):</strong> permukaan lebar penerima beban langsung dari tulang paha',
+                    '<strong>Mata Kaki Dalam (Malleolus Medialis):</strong> tonjolan tulang di sisi dalam pergelangan kaki'
+                ],
+                location: 'Terletak di sisi depan dan dalam (medial) tungkai bawah, membentang dari lutut hingga pergelangan kaki.',
+                function: 'Menopang sekitar 85% beban berat badan dari tulang paha dan meneruskannya ke telapak kaki.',
+                clinicalNote: 'Permukaan depan tulang tibia hanya dilapisi kulit tipis dan periosteum tanpa bantalan otot tebal, sehingga terasa nyeri bila terbentur.',
+                focusY: 0.35,
+                pinPos: [0.10, 0.36, 0.03]
+            },
+            {
+                id: 'fibula',
+                name: 'Tulang Betis',
+                latin: 'Fibula',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Ramping',
+                countMain: '2 Tulang (Kanan & Kiri)',
+                countBreakdown: '1 tulang pipa ramping di sisi luar tungkai bawah kanan dan 1 di tungkai bawah kiri.',
+                subBones: [
+                    '<strong>Kepala Fibula (Caput Fibulae):</strong> ujung atas yang bersendi di bawah kondilus lateral tibia',
+                    '<strong>Mata Kaki Luar (Malleolus Lateralis):</strong> tonjolan tulang di sisi luar pergelangan kaki'
+                ],
+                location: 'Terletak sejajar di sisi luar (lateral) dan agak ke belakang dari tulang kering (tibia).',
+                function: 'Menstabilkan sendi pergelangan kaki agar tidak mudah terkilir serta menjadi tempat melekatnya otot penggerak telapak dan jari kaki.',
+                clinicalNote: 'Fibula tidak ikut membentuk sendi lutut secara langsung dan hanya menopang sekitar 15% beban tubuh, sehingga sering digunakan sebagai sumber cangkok tulang (bone graft).',
+                focusY: 0.35,
+                pinPos: [-0.15, 0.35, -0.01]
+            },
+            {
+                id: 'tarsal',
+                name: 'Tulang Pergelangan Kaki',
+                latin: 'Ossa Tarsi (Tarsal)',
+                category: 'Apendikular',
+                shape: 'Tulang Pendek (Ossa Brevia)',
+                countMain: '14 Tulang (7 per kaki)',
+                countBreakdown: 'Terdiri dari 7 tulang besar dan kuat pada masing-masing pergelangan dan tumit kaki (7 kanan + 7 kiri = 14 tulang).',
+                subBones: [
+                    '<strong>Tulang Tumit (Calcaneus):</strong> tulang tarsal terbesar yang membentuk tumit dan menyentuh tanah',
+                    '<strong>Tulang Loncat (Talus):</strong> tulang tertinggi yang bersendi langsung dengan tibia dan fibula',
+                    '<strong>5 Tarsal Depan:</strong> Naviculare (1), Cuboideum (1), serta Cuneiforme Mediale, Intermedium, & Laterale (3)'
+                ],
+                location: 'Terletak di bagian belakang kaki (tumit dan pergelangan kaki).',
+                function: 'Menahan seluruh beban berat badan saat berdiri/berjalan serta membentuk lengkungan kaki (arkus pedis) sebagai peredam kejut.',
+                clinicalNote: 'Tendon Achilles (tendon terkuat di tubuh manusia) melekat pada bagian belakang tulang calcaneus untuk mengangkat tumit saat melangkah.',
+                focusY: 0.08,
+                pinPos: [0.12, 0.09, -0.02]
+            },
+            {
+                id: 'metatarsal',
+                name: 'Tulang Telapak Kaki',
+                latin: 'Ossa Metatarsi (Metatarsal)',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Pendek',
+                countMain: '10 Tulang (5 per kaki)',
+                countBreakdown: 'Terdiri dari 5 tulang pipa melengkung pada masing-masing telapak kaki (nomor I–V dari ibu jari kaki ke kelingking kaki).',
+                subBones: [
+                    '<strong>Metatarsal I:</strong> tulang paling tebal penopang ibu jari kaki (hallux)',
+                    '<strong>Metatarsal II–V:</strong> membentuk lengkungan longitudinal dan transversal telapak kaki'
+                ],
+                location: 'Terletak di bagian tengah telapak kaki, menghubungkan tulang tarsal dengan jari kaki.',
+                function: 'Menjaga keseimbangan tubuh saat berdiri dan bertindak sebagai pegas elastis saat melangkah atau berlari.',
+                clinicalNote: 'Lengkungan (arkus) yang dibentuk tarsal dan metatarsal mendistribusikan berat tubuh secara merata antara tumit dan pangkal jari kaki.',
+                focusY: 0.04,
+                pinPos: [-0.12, 0.04, 0.08]
+            },
+            {
+                id: 'foot_phalanges',
+                name: 'Tulang Jari Kaki',
+                latin: 'Phalanges Pedis',
+                category: 'Apendikular',
+                shape: 'Tulang Pipa Pendek',
+                countMain: '28 Tulang (14 per kaki)',
+                countBreakdown: 'Ibu jari kaki (hallux) memiliki 2 ruas tulang, sedangkan 4 jari kaki lainnya memiliki 3 ruas tulang (14 kanan + 14 kiri = 28 tulang).',
+                subBones: [
+                    '<strong>Phalanx Proximalis:</strong> 5 ruas pangkal jari kaki pada tiap kaki',
+                    '<strong>Phalanx Media:</strong> 4 ruas tengah jari kaki pada tiap kaki (tidak ada pada ibu jari kaki)',
+                    '<strong>Phalanx Distalis:</strong> 5 ruas ujung jari kaki pada tiap kaki'
+                ],
+                location: 'Terletak di bagian paling depan (anterior) telapak kaki.',
+                function: 'Memberikan keseimbangan ekstra dan daya dorong akhir (toe-off) saat berjalan, berlari, atau melompat.',
+                clinicalNote: 'Meski jumlah ruasnya sama dengan jari tangan (14 per sisi), phalanges kaki berukuran jauh lebih pendek dan kokoh untuk stabilitas tumpuan.',
+                focusY: 0.02,
+                pinPos: [0.12, 0.02, 0.14]
+            }
+        ];
+
+        // =====================================================================
+        // 2. BANK SOAL KUIS SISTEM GERAK (10 SOAL KOMPREHENSIF)
+        // =====================================================================
+        const QUIZ_QUESTIONS = [
+            {
+                category: 'Jumlah & Klasifikasi Rangka',
+                question: 'Jumlah seluruh tulang penyusun rangka manusia dewasa adalah 206 tulang, yang terbagi menjadi rangka aksial dan rangka apendikular dengan perbandingan jumlah berturut-turut yaitu...',
+                options: [
+                    '80 tulang aksial dan 126 tulang apendikular',
+                    '126 tulang aksial dan 80 tulang apendikular',
+                    '90 tulang aksial dan 116 tulang apendikular',
+                    '76 tulang aksial dan 130 tulang apendikular'
+                ],
+                correctIndex: 0,
+                explanation: 'Rangka aksial (sumbu tubuh) berjumlah 80 tulang (tengkorak 22, osikula & hyoid 7, tulang belakang 26, sternum 1, rusuk 24), sedangkan rangka apendikular (anggota gerak & gelang) berjumlah 126 tulang.'
+            },
+            {
+                category: 'Nomenklatur Latin',
+                question: 'Pada lengan bawah manusia terdapat dua buah tulang pipa yang sejajar. Tulang lengan bawah yang letaknya selalu lurus searah dengan ibu jari memiliki nama ilmiah (Latin)...',
+                options: [
+                    'Ulna',
+                    'Humerus',
+                    'Radius',
+                    'Clavicula'
+                ],
+                correctIndex: 2,
+                explanation: 'Radius (tulang pengumpil) terletak di sisi luar (lateral) lengan bawah sejajar dengan ibu jari, sedangkan Ulna (tulang hasta) sejajar dengan jari kelingking.'
+            },
+            {
+                category: 'Anatomi Tulang Rusuk',
+                question: 'Tulang rusuk manusia berjumlah 12 pasang (24 tulang). Berdasarkan cara perlekatannya pada tulang dada (sternum), susunan tulang rusuk yang benar adalah...',
+                options: [
+                    '7 pasang rusuk sejati, 3 pasang rusuk palsu, dan 2 pasang rusuk melayang',
+                    '6 pasang rusuk sejati, 4 pasang rusuk palsu, dan 2 pasang rusuk melayang',
+                    '7 pasang rusuk sejati, 2 pasang rusuk palsu, dan 3 pasang rusuk melayang',
+                    '8 pasang rusuk sejati, 2 pasang rusuk palsu, dan 2 pasang rusuk melayang'
+                ],
+                correctIndex: 0,
+                explanation: 'Costae terdiri dari 7 pasang rusuk sejati (costae verae), 3 pasang rusuk palsu (costae spuriae), dan 2 pasang rusuk melayang (costae fluctuantes).'
+            },
+            {
+                category: 'Ruas Tulang Belakang',
+                question: 'Kolumna vertebralis (tulang belakang) manusia dewasa tersusun atas 26 ruas tulang yang terbagi menjadi lima wilayah dari atas ke bawah, yaitu...',
+                options: [
+                    '7 servikalis, 12 torakalis, 5 lumbalis, 1 sakrum, dan 1 koksigis',
+                    '5 servikalis, 12 torakalis, 7 lumbalis, 1 sakrum, dan 1 koksigis',
+                    '7 servikalis, 10 torakalis, 7 lumbalis, 1 sakrum, dan 1 koksigis',
+                    '12 servikalis, 7 torakalis, 5 lumbalis, 1 sakrum, dan 1 koksigis'
+                ],
+                correctIndex: 0,
+                explanation: 'Urutan ruas tulang belakang dari leher hingga tulang ekor adalah 7 servikalis (leher), 12 torakalis (punggung), 5 lumbalis (pinggang), 1 sakrum (fusi 5 ruas), dan 1 koksigis (fusi 4 ruas).'
+            },
+            {
+                category: 'Anatomi Tengkorak',
+                question: 'Satu-satunya tulang pada bagian kepala/wajah manusia yang memiliki sendi gerak (diartrosis) sehingga dapat digerakkan saat mengunyah dan berbicara adalah...',
+                options: [
+                    'Maxilla (rahang atas)',
+                    'Mandibula (rahang bawah)',
+                    'Os Zygomaticum (tulang pipi)',
+                    'Os Temporale (tulang pelipis)'
+                ],
+                correctIndex: 1,
+                explanation: 'Mandibula (tulang rahang bawah) bersendi dengan tulang temporal melalui sendi temporomandibular (TMJ), menjadikannya satu-satunya tulang tengkorak yang bebas bergerak.'
+            },
+            {
+                category: 'Bentuk & Jenis Tulang',
+                question: 'Tulang tempurung lutut (Patella) merupakan tulang berbentuk segitiga yang tertanam di dalam tendon otot paha depan. Berdasarkan bentuk dan perkembangannya, patella diklasifikasikan sebagai...',
+                options: [
+                    'Tulang pipa (Ossa longa)',
+                    'Tulang pipih (Ossa plana)',
+                    'Tulang sesamoid (Ossa sesamoidea)',
+                    'Tulang tidak beraturan (Ossa irregularia)'
+                ],
+                correctIndex: 2,
+                explanation: 'Patella adalah tulang sesamoid terbesar di tubuh manusia yang berkembang di dalam tendon untuk melindungi sendi lutut dan memperbesar daya ungkit otot kuadrisep.'
+            },
+            {
+                category: 'Tulang Pendengaran',
+                question: 'Tulang terkecil di dalam tubuh manusia yang berada di telinga tengah dan berfungsi meneruskan getaran suara ke telinga dalam adalah...',
+                options: [
+                    'Os Hyoideum (tulang lidah)',
+                    'Stapes (tulang sanggurdi)',
+                    'Os Lacrimale (tulang air mata)',
+                    'Os Coccygis (tulang ekor)'
+                ],
+                correctIndex: 1,
+                explanation: 'Stapes (tulang sanggurdi) merupakan tulang terkecil pada tubuh manusia (berukuran sekitar 2,8 mm) yang terletak di telinga tengah bersama maleus dan inkus.'
+            },
+            {
+                category: 'Gelang Panggul',
+                question: 'Pada manusia dewasa, masing-masing tulang gelang panggul (Os Coxae) merupakan hasil penyatuan (fusi) dari tiga tulang penyusun yang bertemu di mangkuk sendi asetabulum, yaitu...',
+                options: [
+                    'Ilium, Iskium, dan Pubis',
+                    'Sacrum, Coccygis, dan Ilium',
+                    'Manubrium, Corpus, dan Xiphoideus',
+                    'Calcaneus, Talus, dan Cuboideum'
+                ],
+                correctIndex: 0,
+                explanation: 'Os coxae terbentuk dari penyatuan tulang usus (os ilium), tulang duduk (os ischium), dan tulang kemaluan (os pubis).'
+            },
+            {
+                category: 'Anatomi Anggota Gerak Bawah',
+                question: 'Pada tungkai bawah manusia terdapat dua buah tulang pipa. Tulang yang berukuran lebih besar, terletak di sisi dalam (medial), dan menopang sekitar 85% berat tubuh adalah...',
+                options: [
+                    'Fibula (tulang betis)',
+                    'Tibia (tulang kering)',
+                    'Femur (tulang paha)',
+                    'Calcaneus (tulang tumit)'
+                ],
+                correctIndex: 1,
+                explanation: 'Tibia (tulang kering) adalah tulang terbesar kedua setelah femur yang berada di bagian depan-dalam tungkai bawah sebagai penopang utama berat tubuh.'
+            },
+            {
+                category: 'Tulang Jari Tangan & Kaki',
+                question: 'Jumlah keseluruhan tulang ruas jari tangan (Phalanges manus) pada kedua tangan manusia normal adalah...',
+                options: [
+                    '14 tulang',
+                    '20 tulang',
+                    '28 tulang',
+                    '30 tulang'
+                ],
+                correctIndex: 2,
+                explanation: 'Setiap tangan memiliki 14 ruas jari (ibu jari 2 ruas + 4 jari lainnya masing-masing 3 ruas = 14). Untuk kedua tangan (kanan & kiri) berjumlah 28 tulang.'
+            }
+        ];
+
+        // =====================================================================
+        // 3. VARIABEL GLOBAL THREE.JS & STATE APLIKASI
+        // =====================================================================
+        let scene, camera, renderer, controls;
+        let skeletonRoot = new THREE.Group();
+        let boneGroupsMap = {};
+        let interactiveMeshes = [];
+        let floatingPinElements = [];
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+
+        let selectedBoneId = 'cranium';
+        let hoveredBoneId = null;
+        let currentCategory = 'all';
+        let showFloatingPins = true;
+        let showZoneColors = false;
+
+        let targetCameraPos = null;
+        let targetControlsLookAt = null;
+        let pointerDownPos = { x: 0, y: 0 };
+
+        // Material Studio Terang Kontras Tinggi
+        const MAT_BONE_NORMAL = new THREE.MeshStandardMaterial({
+            color: 0xf6efe2,
+            roughness: 0.45,
+            metalness: 0.04,
+        });
+        const MAT_BONE_HOVER = new THREE.MeshStandardMaterial({
+            color: 0xfacc15,
+            emissive: 0xca8a04,
+            emissiveIntensity: 0.35,
+            roughness: 0.32,
+            metalness: 0.08,
+        });
+        const MAT_BONE_ACTIVE = new THREE.MeshStandardMaterial({
+            color: 0x0d9488,
+            emissive: 0x115e59,
+            emissiveIntensity: 0.45,
+            roughness: 0.28,
+            metalness: 0.1,
+        });
+        const MAT_BONE_AXIAL = new THREE.MeshStandardMaterial({
+            color: 0x6366f1,
+            roughness: 0.4,
+            metalness: 0.06,
+        });
+        const MAT_BONE_APPENDICULAR = new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            roughness: 0.4,
+            metalness: 0.06,
+        });
+        const MAT_BONE_DIMMED = new THREE.MeshStandardMaterial({
+            color: 0x94a3b8,
+            roughness: 0.7,
+            transparent: true,
+            opacity: 0.22,
+        });
+        const MAT_CARTILAGE = new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            roughness: 0.3,
+            transparent: true,
+            opacity: 0.75,
+        });
+        const MAT_DISC_DARK = new THREE.MeshStandardMaterial({
+            color: 0x64748b,
+            roughness: 0.65,
+        });
+        const MAT_SOCKET_DARK = new THREE.MeshStandardMaterial({
+            color: 0x334155,
+            roughness: 0.85,
+        });
+        const MAT_EDGE_LINE = new THREE.LineBasicMaterial({
+            color: 0x94a3b8,
+            transparent: true,
+            opacity: 0.28
+        });
+
+        // =====================================================================
+        // 4. INISIALISASI APLIKASI & ENGINE 3D
+        // =====================================================================
+        window.onload = function () {
+            initThreeJS();
+            buildDetailedSkeleton3D();
+            initFloatingPins();
+            renderBoneList();
+            selectBone('cranium', false);
+            initScoreboardData();
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            animate();
+        };
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+            camera.position.set(0, 1.32, 3.75);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.target.set(0, 1.25, 0);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.minDistance = 0.85;
+            controls.maxDistance = 6.5;
+            controls.maxPolarAngle = Math.PI * 0.96;
+            controls.update();
+
+            controls.addEventListener('start', () => {
+                targetCameraPos = null;
+                targetControlsLookAt = null;
+            });
+
+            // Pencahayaan Studio Terang (3-Point + Hemisphere)
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 0.95);
+            scene.add(hemiLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+            keyLight.position.set(2.8, 4.5, 3.8);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 1024;
+            keyLight.shadow.mapSize.height = 1024;
+            scene.add(keyLight);
+
+            const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.55);
+            fillLight.position.set(-3.2, 2.5, 2.2);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xfef3c7, 0.5);
+            rimLight.position.set(0, 3.2, -3.5);
+            scene.add(rimLight);
+
+            // Grid Lantai Studio & Pedestal Medis
+            const gridHelper = new THREE.GridHelper(3.0, 20, 0x0d9488, 0xcbd5e1);
+            gridHelper.position.y = -0.02;
+            scene.add(gridHelper);
+
+            const pedestalGeo = new THREE.CylinderGeometry(0.65, 0.72, 0.03, 48);
+            const pedestalMat = new THREE.MeshStandardMaterial({
+                color: 0xf8fafc,
+                roughness: 0.35,
+                metalness: 0.15
+            });
+            const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
+            pedestal.position.y = -0.015;
+            pedestal.receiveShadow = true;
+            scene.add(pedestal);
+
+            scene.add(skeletonRoot);
+
+            const domEl = renderer.domElement;
+            domEl.addEventListener('pointerdown', onPointerDown);
+            domEl.addEventListener('pointermove', onPointerMove);
+            domEl.addEventListener('pointerup', onPointerUp);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createBoneGroup(boneId) {
+            const group = new THREE.Group();
+            group.userData.boneId = boneId;
+            boneGroupsMap[boneId] = group;
+            skeletonRoot.add(group);
+            return group;
+        }
+
+        // Menambahkan Part 3D dengan Garis Kontur Sendi Anatomis yang Tajam
+        function addPart(group, geometry, pos = [0, 0, 0], rot = [0, 0, 0], scale = [1, 1, 1], specialType = 'bone') {
+            let mat = MAT_BONE_NORMAL;
+            if (specialType === 'socket') mat = MAT_SOCKET_DARK;
+            else if (specialType === 'cartilage') mat = MAT_CARTILAGE;
+            else if (specialType === 'disc') mat = MAT_DISC_DARK;
+
+            const mesh = new THREE.Mesh(geometry, mat);
+            mesh.position.set(...pos);
+            mesh.rotation.set(...rot);
+            mesh.scale.set(...scale);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.userData.boneId = group.userData.boneId;
+            mesh.userData.specialType = specialType;
+
+            // Tambahkan garis kontur tepi halus pada tulang besar agar detail anatomi sangat jelas
+            if (specialType === 'bone') {
+                const edges = new THREE.EdgesGeometry(geometry, 35);
+                const line = new THREE.LineSegments(edges, MAT_EDGE_LINE);
+                mesh.add(line);
+                interactiveMeshes.push(mesh);
+            } else if (specialType === 'cartilage') {
+                interactiveMeshes.push(mesh);
+            }
+
+            group.add(mesh);
+            return mesh;
+        }
+
+        function createLongBone(group, startVec, endVec, rShaft, rHeadTop, rHeadBottom) {
+            const dir = new THREE.Vector3().subVectors(endVec, startVec);
+            const len = dir.length();
+            const mid = new THREE.Vector3().addVectors(startVec, endVec).multiplyScalar(0.5);
+
+            const shaftGeo = new THREE.CylinderGeometry(rShaft * 0.9, rShaft, len, 16);
+            const shaft = new THREE.Mesh(shaftGeo, MAT_BONE_NORMAL);
+            shaft.position.copy(mid);
+            shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+            shaft.castShadow = true;
+            shaft.userData.boneId = group.userData.boneId;
+            shaft.userData.specialType = 'bone';
+            group.add(shaft);
+            interactiveMeshes.push(shaft);
+
+            if (rHeadTop > 0) {
+                const topGeo = new THREE.SphereGeometry(rHeadTop, 16, 14);
+                const topMesh = new THREE.Mesh(topGeo, MAT_BONE_NORMAL);
+                topMesh.position.copy(startVec);
+                topMesh.scale.set(1.18, 0.88, 1.02);
+                topMesh.castShadow = true;
+                topMesh.userData.boneId = group.userData.boneId;
+                topMesh.userData.specialType = 'bone';
+                group.add(topMesh);
+                interactiveMeshes.push(topMesh);
+            }
+
+            if (rHeadBottom > 0) {
+                const botGeo = new THREE.SphereGeometry(rHeadBottom, 16, 14);
+                const botMesh = new THREE.Mesh(botGeo, MAT_BONE_NORMAL);
+                botMesh.position.copy(endVec);
+                botMesh.scale.set(1.28, 0.85, 1.05);
+                botMesh.castShadow = true;
+                botMesh.userData.boneId = group.userData.boneId;
+                botMesh.userData.specialType = 'bone';
+                group.add(botMesh);
+                interactiveMeshes.push(botMesh);
+            }
+        }
+
+        function createCurvedTubeBone(group, pointsArray, radius, tubularSegments = 24, specialType = 'bone') {
+            const curve = new THREE.CatmullRomCurve3(pointsArray.map(p => new THREE.Vector3(...p)));
+            const geo = new THREE.TubeGeometry(curve, tubularSegments, radius, 10, false);
+            return addPart(group, geo, [0, 0, 0], [0, 0, 0], [1, 1, 1], specialType);
+        }
+
+        // =====================================================================
+        // 5. PEMBANGUNAN MODEL RANGKA MANUSIA 3D SANGAT DETAIL (22 KELOMPOK)
+        // =====================================================================
+        function buildDetailedSkeleton3D() {
+            // 1. TEMPURUNG KEPALA / KRANIUM (8 TULANG)
+            const gCranium = createBoneGroup('cranium');
+            // Tulang Dahi (Frontal)
+            addPart(gCranium, new THREE.SphereGeometry(0.132, 24, 20), [0, 2.39, 0.032], [0, 0, 0], [0.92, 0.98, 0.92]);
+            // Tulang Ubun-Ubun Kanan & Kiri (Parietal) dengan garis sutura sagitalis
+            [-1, 1].forEach(side => {
+                addPart(gCranium, new THREE.SphereGeometry(0.125, 22, 18), [side * 0.034, 2.415, -0.025], [0, 0, 0], [0.76, 0.95, 1.05]);
+                // Tulang Pelipis (Temporal)
+                addPart(gCranium, new THREE.SphereGeometry(0.068, 16, 14), [side * 0.105, 2.31, -0.02], [0, 0, 0], [0.55, 0.85, 1.05]);
+            });
+            // Tulang Kepala Belakang (Occipital)
+            addPart(gCranium, new THREE.SphereGeometry(0.115, 20, 16), [0, 2.34, -0.075], [0, 0, 0], [0.95, 0.92, 0.85]);
+            // Tonjolan Alis (Superciliary Arch)
+            addPart(gCranium, new THREE.TorusGeometry(0.076, 0.014, 10, 20, Math.PI * 0.78), [0, 2.315, 0.106], [0.18, 0, Math.PI * 0.11]);
+
+            // 2. TULANG WAJAH & RAHANG BAWAH (14 TULANG)
+            const gFacial = createBoneGroup('facial');
+            // Tulang Rahang Atas (Maxilla)
+            addPart(gFacial, new THREE.CylinderGeometry(0.082, 0.064, 0.095, 20), [0, 2.255, 0.078], [0.1, 0, 0], [1.02, 1.0, 0.88]);
+            // Tulang Hidung (Nasale)
+            addPart(gFacial, new THREE.BoxGeometry(0.024, 0.038, 0.022), [0, 2.295, 0.132], [-0.35, 0, 0]);
+            // Rongga Hidung (Cavum Nasi) & Sekat Vomer
+            addPart(gFacial, new THREE.ConeGeometry(0.019, 0.044, 3), [0, 2.255, 0.134], [0, 0, 0], [0.9, 1.0, 0.6], 'socket');
+            addPart(gFacial, new THREE.BoxGeometry(0.003, 0.036, 0.025), [0, 2.252, 0.125]);
+            // Tulang Pipi (Zygomaticum) & Rongga Mata (Orbita)
+            [-1, 1].forEach(side => {
+                addPart(gFacial, new THREE.SphereGeometry(0.032, 14, 12), [side * 0.074, 2.275, 0.088], [0, 0, 0], [1.15, 0.85, 1.1]);
+                // Lengkung Pipi (Arcus Zygomaticus) ke belakang
+                createCurvedTubeBone(gFacial, [
+                    [side * 0.078, 2.275, 0.08],
+                    [side * 0.105, 2.28, 0.03],
+                    [side * 0.105, 2.29, -0.02]
+                ], 0.009, 12);
+                // Rongga Orbita Mata
+                addPart(gFacial, new THREE.SphereGeometry(0.029, 16, 14), [side * 0.044, 2.296, 0.118], [0, 0, 0], [1.06, 0.92, 0.55], 'socket');
+            });
+            // Rahang Bawah (Mandibula) dengan Kondilus & Dagu Jelas
+            createCurvedTubeBone(gFacial, [
+                [-0.076, 2.285, 0.01],
+                [-0.072, 2.205, 0.035],
+                [-0.056, 2.172, 0.075],
+                [0, 2.165, 0.116],
+                [0.056, 2.172, 0.075],
+                [0.072, 2.205, 0.035],
+                [0.076, 2.285, 0.01]
+            ], 0.015, 28);
+            // Deretan Gigi Atas & Bawah
+            for (let i = -3; i <= 3; i++) {
+                addPart(gFacial, new THREE.BoxGeometry(0.010, 0.014, 0.011), [i * 0.0125, 2.208, 0.119]);
+                addPart(gFacial, new THREE.BoxGeometry(0.0095, 0.013, 0.010), [i * 0.0115, 2.191, 0.115]);
+            }
+
+            // 3. TULANG PENDENGARAN (6 OSIKULA) & TULANG HYOID (1)
+            const gEarHyoid = createBoneGroup('ear_hyoid');
+            // Tulang Hyoid (Tapal Kuda di bawah mandibula)
+            createCurvedTubeBone(gEarHyoid, [
+                [-0.036, 2.145, 0.025],
+                [-0.028, 2.138, 0.068],
+                [0, 2.136, 0.082],
+                [0.028, 2.138, 0.068],
+                [0.036, 2.145, 0.025]
+            ], 0.0065, 16);
+            // 3 Osikula Pendengaran di tiap telinga (Maleus, Inkus, Stapes)
+            [-1, 1].forEach(side => {
+                addPart(gEarHyoid, new THREE.SphereGeometry(0.0075, 10, 8), [side * 0.108, 2.295, -0.018]);
+                addPart(gEarHyoid, new THREE.SphereGeometry(0.0065, 10, 8), [side * 0.102, 2.298, -0.022]);
+                addPart(gEarHyoid, new THREE.TorusGeometry(0.005, 0.0018, 8, 12), [side * 0.096, 2.295, -0.020], [0, Math.PI / 2, 0]);
+            });
+
+            // 4. RUAS TULANG BELAKANG (26 TULANG DEWASA + DISKUS INTERVERTEBRALIS)
+            const gVertebrae = createBoneGroup('vertebrae');
+            for (let i = 0; i < 24; i++) {
+                const t = i / 23;
+                const y = 2.13 - t * 0.87;
+                const zCurve = Math.sin(t * Math.PI * 2.15) * 0.030 - 0.045;
+                const radius = 0.021 + t * 0.019;
+                const height = 0.020 + t * 0.011;
+
+                // Badan Ruas (Corpus Vertebrae)
+                addPart(gVertebrae, new THREE.CylinderGeometry(radius, radius * 1.04, height, 16), [0, y, zCurve], [0, 0, 0], [1.18, 1, 0.95]);
+                // Diskus Intervertebralis (Bantalan tulang rawan di antara ruas)
+                if (i < 23) {
+                    addPart(gVertebrae, new THREE.CylinderGeometry(radius * 0.98, radius * 0.98, 0.005, 14), [0, y - height * 0.56, zCurve], [0, 0, 0], [1.15, 1, 0.94], 'disc');
+                }
+                // Prosesus Spinosus (Taju Duri Belakang)
+                addPart(gVertebrae, new THREE.BoxGeometry(0.009, height * 0.72, 0.038), [0, y - 0.005, zCurve - radius - 0.014], [0.28, 0, 0]);
+                // Prosesus Transversus (Taju Samping Kanan & Kiri)
+                addPart(gVertebrae, new THREE.BoxGeometry(radius * 2.9, height * 0.42, 0.009), [0, y, zCurve - 0.01]);
+            }
+            // Sakrum (Os Sacrum - Fusi 5 Ruas Segitiga Melengkung)
+            addPart(gVertebrae, new THREE.ConeGeometry(0.075, 0.148, 6), [0, 1.18, -0.062], [Math.PI + 0.18, 0, 0], [1.18, 1.0, 0.55]);
+            // Koksigis (Os Coccygis - Tulang Ekor)
+            addPart(gVertebrae, new THREE.ConeGeometry(0.024, 0.056, 5), [0, 1.088, -0.042], [Math.PI - 0.15, 0, 0], [1.0, 1.0, 0.6]);
+
+            // 5. TULANG DADA (STERNUM - 3 BAGIAN)
+            const gSternum = createBoneGroup('sternum');
+            // Manubrium Sterni
+            addPart(gSternum, new THREE.CylinderGeometry(0.044, 0.029, 0.066, 8), [0, 1.915, 0.096], [-0.14, 0, 0], [1.15, 1.0, 0.35]);
+            // Corpus Sterni
+            addPart(gSternum, new THREE.BoxGeometry(0.044, 0.186, 0.016), [0, 1.785, 0.114], [-0.05, 0, 0]);
+            // Processus Xiphoideus
+            addPart(gSternum, new THREE.ConeGeometry(0.016, 0.046, 4), [0, 1.668, 0.117], [Math.PI, 0, 0], [1.0, 1.0, 0.4]);
+
+            // 6. TULANG RUSUK (24 TULANG) + KARTILAGO KOSTA BIRU TRANSPARAN
+            const gRibs = createBoneGroup('ribs');
+            for (let r = 0; r < 12; r++) {
+                const yBack = 1.965 - r * 0.036;
+                const yFront = yBack - 0.044;
+                const widthScale = Math.sin((r / 11) * Math.PI * 0.85 + 0.25) * 0.158 + 0.046;
+
+                [-1, 1].forEach(side => {
+                    if (r < 7) {
+                        // 7 Pasang Rusuk Sejati (Tulang keras sampai depan + Kartilago Kosta ke Sternum)
+                        createCurvedTubeBone(gRibs, [
+                            [side * 0.022, yBack, -0.045],
+                            [side * (widthScale * 0.76), yBack - 0.01, -0.076],
+                            [side * widthScale, (yBack + yFront) * 0.5, 0.02],
+                            [side * (widthScale * 0.72), yFront, 0.098]
+                        ], 0.0085, 18, 'bone');
+                        // Kartilago Kosta (Tulang rawan penghubung ke sternum)
+                        createCurvedTubeBone(gRibs, [
+                            [side * (widthScale * 0.72), yFront, 0.098],
+                            [side * 0.022, yFront + 0.006, 0.114]
+                        ], 0.0075, 10, 'cartilage');
+                    } else if (r < 10) {
+                        // 3 Pasang Rusuk Palsu + Kartilago menyatu ke rusuk ke-7
+                        createCurvedTubeBone(gRibs, [
+                            [side * 0.024, yBack, -0.042],
+                            [side * (widthScale * 0.8), yBack - 0.01, -0.068],
+                            [side * widthScale, yBack - 0.035, 0.015],
+                            [side * (widthScale * 0.72), yBack - 0.04, 0.085]
+                        ], 0.008, 18, 'bone');
+                        createCurvedTubeBone(gRibs, [
+                            [side * (widthScale * 0.72), yBack - 0.04, 0.085],
+                            [side * 0.045, 1.715, 0.110]
+                        ], 0.007, 10, 'cartilage');
+                    } else {
+                        // 2 Pasang Rusuk Melayang
+                        createCurvedTubeBone(gRibs, [
+                            [side * 0.026, yBack, -0.038],
+                            [side * (widthScale * 0.85), yBack - 0.012, -0.055],
+                            [side * (widthScale * 0.96), yBack - 0.025, 0.008]
+                        ], 0.0075, 14, 'bone');
+                    }
+                });
+            }
+
+            // 7. TULANG SELANGKA (CLAVICULA - 2 TULANG)
+            const gClavicle = createBoneGroup('clavicle');
+            [-1, 1].forEach(side => {
+                createCurvedTubeBone(gClavicle, [
+                    [side * 0.026, 1.948, 0.096],
+                    [side * 0.096, 1.968, 0.106],
+                    [side * 0.168, 1.968, 0.045],
+                    [side * 0.218, 1.974, 0.012]
+                ], 0.012, 18);
+            });
+
+            // 8. TULANG BELIKAT (SCAPULA - 2 TULANG)
+            const gScapula = createBoneGroup('scapula');
+            [-1, 1].forEach(side => {
+                addPart(gScapula, new THREE.ConeGeometry(0.080, 0.188, 3), [side * 0.136, 1.855, -0.088], [Math.PI + 0.12, side * 0.25, side * -0.15], [1.05, 1.0, 0.18]);
+                addPart(gScapula, new THREE.BoxGeometry(0.128, 0.018, 0.028), [side * 0.156, 1.936, -0.072], [0, side * -0.35, side * 0.18]);
+                addPart(gScapula, new THREE.SphereGeometry(0.026, 14, 12), [side * 0.216, 1.936, -0.005]);
+            });
+
+            // 9. TULANG LENGAN ATAS (HUMERUS - 2 TULANG)
+            const gHumerus = createBoneGroup('humerus');
+            [-1, 1].forEach(side => {
+                createLongBone(gHumerus, new THREE.Vector3(side * 0.234, 1.926, 0.00), new THREE.Vector3(side * 0.266, 1.545, 0.012), 0.019, 0.032, 0.028);
+            });
+
+            // 10. TULANG PENGUMPIL (RADIUS - 2 TULANG)
+            const gRadius = createBoneGroup('radius');
+            [-1, 1].forEach(side => {
+                createLongBone(gRadius, new THREE.Vector3(side * 0.279, 1.525, 0.018), new THREE.Vector3(side * 0.306, 1.175, 0.048), 0.012, 0.016, 0.021);
+            });
+
+            // 11. TULANG HASTA (ULNA - 2 TULANG)
+            const gUlna = createBoneGroup('ulna');
+            [-1, 1].forEach(side => {
+                createLongBone(gUlna, new THREE.Vector3(side * 0.253, 1.536, 0.004), new THREE.Vector3(side * 0.279, 1.172, 0.025), 0.013, 0.022, 0.015);
+            });
+
+            // 12. PERGELANGAN TANGAN (CARPAL - 16 TULANG)
+            const gCarpal = createBoneGroup('carpal');
+            [-1, 1].forEach(side => {
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 4; col++) {
+                        addPart(gCarpal, new THREE.SphereGeometry(0.0085, 10, 8), [side * (0.277 + col * 0.011), 1.148 - row * 0.016, 0.026 + col * 0.006], [0, 0, 0], [1.1, 0.9, 0.85]);
+                    }
+                }
+            });
+
+            // 13. TELAPAK TANGAN (METACARPAL - 10 TULANG)
+            const gMetacarpal = createBoneGroup('metacarpal');
+            [-1, 1].forEach(side => {
+                for (let f = 0; f < 5; f++) {
+                    const spread = (f - 2) * 0.011;
+                    const len = f === 0 ? 0.045 : 0.062;
+                    const start = new THREE.Vector3(side * (0.293 + spread * 0.6), 1.122, 0.036 + spread * 0.8);
+                    const end = new THREE.Vector3(side * (0.299 + spread * 1.15), 1.122 - len, 0.042 + spread * 1.25);
+                    createLongBone(gMetacarpal, start, end, 0.0048, 0.0065, 0.0065);
+                }
+            });
+
+            // 14. JARI TANGAN (PHALANGES MANUS - 28 TULANG)
+            const gHandPhalanges = createBoneGroup('hand_phalanges');
+            [-1, 1].forEach(side => {
+                for (let f = 0; f < 5; f++) {
+                    const spread = (f - 2) * 0.011;
+                    const phalanxCount = f === 0 ? 2 : 3;
+                    let currY = f === 0 ? 1.072 : 1.055;
+                    let currX = side * (0.299 + spread * 1.15);
+                    let currZ = 0.042 + spread * 1.25;
+
+                    for (let p = 0; p < phalanxCount; p++) {
+                        const pLen = (0.026 - p * 0.0045) * (f === 2 ? 1.12 : 0.95);
+                        createLongBone(gHandPhalanges, new THREE.Vector3(currX, currY, currZ), new THREE.Vector3(currX - side * 0.003, currY - pLen, currZ + spread * 0.15), 0.004 - p * 0.0005, 0.005, 0.0045);
+                        currY -= (pLen + 0.003);
+                        currX -= side * 0.003;
+                    }
+                }
+            });
+
+            // 15. GELANG PANGGUL (PELVIS / OSSA COXAE - 2 TULANG BESAR)
+            const gPelvis = createBoneGroup('pelvis');
+            [-1, 1].forEach(side => {
+                addPart(gPelvis, new THREE.CylinderGeometry(0.090, 0.056, 0.138, 18), [side * 0.106, 1.21, -0.015], [0.22, side * 0.45, side * -0.35], [1.15, 1.0, 0.32]);
+                createCurvedTubeBone(gPelvis, [
+                    [side * 0.055, 1.24, -0.055],
+                    [side * 0.136, 1.268, -0.025],
+                    [side * 0.150, 1.21, 0.042]
+                ], 0.014, 16);
+                createCurvedTubeBone(gPelvis, [
+                    [side * 0.136, 1.17, 0.032],
+                    [side * 0.012, 1.105, 0.066],
+                    [side * 0.068, 1.045, 0.015],
+                    [side * 0.116, 1.11, -0.025]
+                ], 0.015, 20);
+            });
+
+            // 16. TULANG PAHA (FEMUR - 2 TULANG)
+            const gFemur = createBoneGroup('femur');
+            [-1, 1].forEach(side => {
+                createLongBone(gFemur, new THREE.Vector3(side * 0.108, 1.125, 0.008), new THREE.Vector3(side * 0.146, 1.095, 0.005), 0.017, 0.028, 0.025);
+                createLongBone(gFemur, new THREE.Vector3(side * 0.146, 1.095, 0.005), new THREE.Vector3(side * 0.115, 0.615, 0.015), 0.023, 0.026, 0.038);
+            });
+
+            // 17. TEMPURUNG LUTUT (PATELLA - 2 TULANG)
+            const gPatella = createBoneGroup('patella');
+            [-1, 1].forEach(side => {
+                addPart(gPatella, new THREE.SphereGeometry(0.024, 16, 14), [side * 0.115, 0.595, 0.054], [0, 0, 0], [1.05, 1.15, 0.55]);
+            });
+
+            // 18. TULANG KERING (TIBIA - 2 TULANG)
+            const gTibia = createBoneGroup('tibia');
+            [-1, 1].forEach(side => {
+                createLongBone(gTibia, new THREE.Vector3(side * 0.112, 0.568, 0.012), new THREE.Vector3(side * 0.105, 0.135, 0.008), 0.020, 0.036, 0.026);
+            });
+
+            // 19. TULANG BETIS (FIBULA - 2 TULANG)
+            const gFibula = createBoneGroup('fibula');
+            [-1, 1].forEach(side => {
+                createLongBone(gFibula, new THREE.Vector3(side * 0.142, 0.548, -0.008), new THREE.Vector3(side * 0.132, 0.125, -0.005), 0.009, 0.015, 0.015);
+            });
+
+            // 20. PERGELANGAN KAKI (TARSAL - 14 TULANG)
+            const gTarsal = createBoneGroup('tarsal');
+            [-1, 1].forEach(side => {
+                addPart(gTarsal, new THREE.BoxGeometry(0.036, 0.038, 0.068), [side * 0.115, 0.065, -0.018], [0.1, 0, 0]);
+                addPart(gTarsal, new THREE.SphereGeometry(0.024, 14, 12), [side * 0.114, 0.102, 0.005], [0, 0, 0], [1.0, 0.85, 1.2]);
+                for (let t = 0; t < 5; t++) {
+                    addPart(gTarsal, new THREE.SphereGeometry(0.012, 10, 8), [side * (0.095 + t * 0.011), 0.062, 0.035]);
+                }
+            });
+
+            // 21. TELAPAK KAKI (METATARSAL - 10 TULANG)
+            const gMetatarsal = createBoneGroup('metatarsal');
+            [-1, 1].forEach(side => {
+                for (let m = 0; m < 5; m++) {
+                    const xPos = side * (0.092 + m * 0.012);
+                    const rBone = m === 0 ? 0.0075 : 0.0052;
+                    createLongBone(gMetatarsal, new THREE.Vector3(xPos, 0.056, 0.048), new THREE.Vector3(xPos * 1.04, 0.026, 0.115 - m * 0.004), rBone, rBone * 1.2, rBone * 1.2);
+                }
+            });
+
+            // 22. JARI KAKI (PHALANGES PEDIS - 28 TULANG)
+            const gFootPhalanges = createBoneGroup('foot_phalanges');
+            [-1, 1].forEach(side => {
+                for (let f = 0; f < 5; f++) {
+                    const xPos = side * (0.095 + f * 0.0125);
+                    const count = f === 0 ? 2 : 3;
+                    let currZ = 0.122 - f * 0.004;
+                    for (let p = 0; p < count; p++) {
+                        const pLen = (f === 0 ? 0.022 : 0.015) - p * 0.0025;
+                        const rToe = f === 0 ? 0.007 : 0.0045;
+                        createLongBone(gFootPhalanges, new THREE.Vector3(xPos, 0.024, currZ), new THREE.Vector3(xPos, 0.018, currZ + pLen), rToe, rToe * 1.15, rToe * 1.1);
+                        currZ += pLen + 0.003;
+                    }
+                }
+            });
+        }
+
+        // =====================================================================
+        // 6. PIN LABEL TERAPUNG 3D & PROYEKSI LAYAR
+        // =====================================================================
+        const KEY_PINS = ['cranium', 'facial', 'clavicle', 'sternum', 'ribs', 'humerus', 'vertebrae', 'pelvis', 'radius', 'ulna', 'femur', 'patella', 'tibia', 'fibula', 'tarsal'];
+
+        function initFloatingPins() {
+            const layer = document.getElementById('floatingPinsLayer');
+            layer.innerHTML = '';
+            floatingPinElements = [];
+
+            KEY_PINS.forEach(boneId => {
+                const bone = BONES_DATA.find(b => b.id === boneId);
+                if (!bone || !bone.pinPos) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'pin-label-3d px-2 py-0.5 rounded-full text-[10px] font-bold shadow-md border transition-colors bg-white/90 text-slate-800 border-slate-300 hover:bg-teal-600 hover:text-white hover:border-teal-600';
+                btn.textContent = bone.name.split(' (')[0];
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    selectBone(bone.id, true);
+                };
+                layer.appendChild(btn);
+
+                floatingPinElements.push({
+                    boneId: bone.id,
+                    pos3D: new THREE.Vector3(...bone.pinPos),
+                    el: btn
+                });
+            });
+        }
+
+        function updateFloatingPinsPosition() {
+            const layer = document.getElementById('floatingPinsLayer');
+            if (!showFloatingPins || !renderer || !camera) {
+                layer.classList.add('hidden');
+                return;
+            }
+            layer.classList.remove('hidden');
+
+            const width = renderer.domElement.clientWidth;
+            const height = renderer.domElement.clientHeight;
+
+            floatingPinElements.forEach(item => {
+                const proj = item.pos3D.clone().project(camera);
+                const isBehind = proj.z > 1;
+                const x = (proj.x * 0.5 + 0.5) * width;
+                const y = (-(proj.y * 0.5) + 0.5) * height;
+
+                if (isBehind || x < 10 || x > width - 10 || y < 10 || y > height - 10) {
+                    item.el.style.opacity = '0';
+                    item.el.style.pointerEvents = 'none';
+                } else {
+                    item.el.style.opacity = '1';
+                    item.el.style.pointerEvents = 'auto';
+                    item.el.style.left = `${x}px`;
+                    item.el.style.top = `${y}px`;
+
+                    if (item.boneId === selectedBoneId) {
+                        item.el.classList.remove('bg-white/90', 'text-slate-800', 'border-slate-300');
+                        item.el.classList.add('bg-teal-600', 'text-white', 'border-teal-700', 'ring-2', 'ring-teal-300');
+                    } else {
+                        item.el.classList.add('bg-white/90', 'text-slate-800', 'border-slate-300');
+                        item.el.classList.remove('bg-teal-600', 'text-white', 'border-teal-700', 'ring-2', 'ring-teal-300');
+                    }
+                }
+            });
+        }
+
+        function toggleFloatingPins() {
+            showFloatingPins = !showFloatingPins;
+            const btn = document.getElementById('btnTogglePins');
+            const txt = document.getElementById('pinBtnText');
+            if (showFloatingPins) {
+                txt.textContent = 'Label 3D: ON';
+                btn.classList.add('bg-teal-600', 'text-white');
+                btn.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+            } else {
+                txt.textContent = 'Label 3D: OFF';
+                btn.classList.remove('bg-teal-600', 'text-white');
+                btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+            }
+        }
+
+        function toggleZoneColorMode() {
+            showZoneColors = !showZoneColors;
+            const btn = document.getElementById('btnToggleZones');
+            const txt = document.getElementById('zoneBtnText');
+            const legend = document.getElementById('zoneLegendBar');
+
+            if (showZoneColors) {
+                txt.textContent = 'Warna Zona: ON';
+                btn.classList.add('bg-slate-900', 'text-white', 'border-slate-900');
+                btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                legend.classList.remove('hidden');
+            } else {
+                txt.textContent = 'Warna Zona: OFF';
+                btn.classList.remove('bg-slate-900', 'text-white', 'border-slate-900');
+                btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+                legend.classList.add('hidden');
+            }
+            refresh3DMaterials();
+        }
+
+        // =====================================================================
+        // 7. RAYCASTING INTERAKTIF & KONTROL KAMERA
+        // =====================================================================
+        function updateMouseNDC(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        function onPointerDown(event) {
+            pointerDownPos = { x: event.clientX, y: event.clientY };
+        }
+
+        function onPointerMove(event) {
+            updateMouseNDC(event);
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveMeshes, false);
+            const tooltip = document.getElementById('tooltip3D');
+
+            if (intersects.length > 0) {
+                const hitBoneId = intersects[0].object.userData.boneId;
+                const boneObj = BONES_DATA.find(b => b.id === hitBoneId);
+
+                if (boneObj && (currentCategory === 'all' || boneObj.category === currentCategory)) {
+                    renderer.domElement.style.cursor = 'pointer';
+                    if (hoveredBoneId !== hitBoneId) {
+                        hoveredBoneId = hitBoneId;
+                        refresh3DMaterials();
+                    }
+
+                    document.getElementById('tt3DName').textContent = boneObj.name;
+                    document.getElementById('tt3DLatin').textContent = boneObj.latin;
+                    document.getElementById('tt3DCount').textContent = `${boneObj.countMain} (${boneObj.category})`;
+                    tooltip.style.left = `${event.clientX}px`;
+                    tooltip.style.top = `${event.clientY}px`;
+                    tooltip.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            renderer.domElement.style.cursor = 'grab';
+            tooltip.classList.add('hidden');
+            if (hoveredBoneId !== null) {
+                hoveredBoneId = null;
+                refresh3DMaterials();
+            }
+        }
+
+        function onPointerUp(event) {
+            const dist = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
+            if (dist > 6) return;
+
+            updateMouseNDC(event);
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveMeshes, false);
+
+            if (intersects.length > 0) {
+                const hitBoneId = intersects[0].object.userData.boneId;
+                const boneObj = BONES_DATA.find(b => b.id === hitBoneId);
+                if (boneObj && (currentCategory === 'all' || boneObj.category === currentCategory)) {
+                    selectBone(hitBoneId, false);
+                }
+            }
+        }
+
+        function refresh3DMaterials() {
+            BONES_DATA.forEach(bone => {
+                const group = boneGroupsMap[bone.id];
+                if (!group) return;
+
+                const isDimmed = currentCategory !== 'all' && bone.category !== currentCategory;
+                const isSelected = bone.id === selectedBoneId;
+                const isHovered = bone.id === hoveredBoneId;
+
+                let targetMat = MAT_BONE_NORMAL;
+                if (isDimmed) {
+                    targetMat = MAT_BONE_DIMMED;
+                } else if (isSelected) {
+                    targetMat = MAT_BONE_ACTIVE;
+                } else if (isHovered) {
+                    targetMat = MAT_BONE_HOVER;
+                } else if (showZoneColors) {
+                    targetMat = bone.category === 'Aksial' ? MAT_BONE_AXIAL : MAT_BONE_APPENDICULAR;
+                }
+
+                group.children.forEach(mesh => {
+                    const type = mesh.userData.specialType;
+                    if (type === 'bone') {
+                        mesh.material = targetMat;
+                    } else if (type === 'cartilage') {
+                        mesh.material = isSelected ? MAT_BONE_ACTIVE : (isHovered ? MAT_BONE_HOVER : MAT_CARTILAGE);
+                    }
+                });
+            });
+        }
+
+        function setCameraPreset(preset) {
+            if (controls.autoRotate && preset !== 'reset') toggleAutoRotate(false);
+            targetControlsLookAt = new THREE.Vector3(0, 1.25, 0);
+
+            switch (preset) {
+                case 'front': targetCameraPos = new THREE.Vector3(0, 1.32, 3.75); break;
+                case 'back': targetCameraPos = new THREE.Vector3(0, 1.32, -3.75); break;
+                case 'right': targetCameraPos = new THREE.Vector3(-3.75, 1.32, 0); break;
+                case 'left': targetCameraPos = new THREE.Vector3(3.75, 1.32, 0); break;
+                case 'top': targetCameraPos = new THREE.Vector3(0, 4.1, 0.65); break;
+                default: targetCameraPos = new THREE.Vector3(0, 1.32, 3.75); break;
+            }
+        }
+
+        function zoomCamera(delta) {
+            const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+            const newLen = THREE.MathUtils.clamp(offset.length() + delta, controls.minDistance, controls.maxDistance);
+            offset.setLength(newLen);
+            camera.position.copy(controls.target).add(offset);
+        }
+
+        function focusCameraOnBone(bone) {
+            if (!bone || typeof bone.focusY !== 'number') return;
+            const y = bone.focusY;
+            targetControlsLookAt = new THREE.Vector3(0, y, 0);
+            const currentOffset = new THREE.Vector3().subVectors(camera.position, controls.target);
+            currentOffset.y = 0.12;
+            if (currentOffset.length() < 1.3) currentOffset.setLength(2.2);
+            else if (currentOffset.length() > 3.2) currentOffset.setLength(2.6);
+            targetCameraPos = new THREE.Vector3(0, y, 0).add(currentOffset);
+        }
+
+        function toggleAutoRotate(forceState) {
+            const nextState = typeof forceState === 'boolean' ? forceState : !controls.autoRotate;
+            controls.autoRotate = nextState;
+            controls.autoRotateSpeed = 2.4;
+
+            const btn = document.getElementById('btnAutoRotate');
+            const icon = document.getElementById('autoRotateIcon');
+            if (nextState) {
+                btn.classList.add('bg-teal-600', 'text-white', 'border-teal-600');
+                btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                icon.classList.add('animate-spin', 'text-white');
+                icon.classList.remove('text-teal-600');
+            } else {
+                btn.classList.remove('bg-teal-600', 'text-white', 'border-teal-600');
+                btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+                icon.classList.remove('animate-spin', 'text-white');
+                icon.classList.add('text-teal-600');
+            }
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            if (!container || !renderer || !camera) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (targetCameraPos && targetControlsLookAt) {
+                camera.position.lerp(targetCameraPos, 0.08);
+                controls.target.lerp(targetControlsLookAt, 0.08);
+                if (camera.position.distanceTo(targetCameraPos) < 0.02) {
+                    targetCameraPos = null;
+                    targetControlsLookAt = null;
+                }
+            }
+            controls.update();
+            updateFloatingPinsPosition();
+            renderer.render(scene, camera);
+        }
+
+        // =====================================================================
+        // 8. LOGIKA DAFTAR INDEKS & PANEL DETAIL TULANG
+        // =====================================================================
+        function renderBoneList() {
+            const container = document.getElementById('boneListContainer');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = BONES_DATA.filter(bone => {
+                const matchCategory = currentCategory === 'all' || bone.category === currentCategory;
+                const matchSearch = bone.name.toLowerCase().includes(searchQuery) ||
+                                    bone.latin.toLowerCase().includes(searchQuery);
+                return matchCategory && matchSearch;
+            });
+
+            document.getElementById('boneCountBadge').textContent = `${filtered.length} Bagian`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Tidak ada tulang yang sesuai pencarian.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(bone => {
+                const isActive = bone.id === selectedBoneId;
+                const badgeClass = bone.category === 'Aksial'
+                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                    : 'bg-amber-50 text-amber-800 border-amber-200';
+
+                return `
+                    <button onclick="selectBone('${bone.id}', true)"
+                        class="w-full text-left px-4 py-3 transition flex items-start justify-between gap-2 hover:bg-slate-50 ${isActive ? 'bg-teal-50/90 border-l-4 border-l-teal-600' : ''}">
+                        <div>
+                            <p class="text-sm font-bold ${isActive ? 'text-teal-800' : 'text-slate-800'} leading-snug">
+                                ${bone.name}
+                            </p>
+                            <p class="text-xs italic text-slate-500 mt-0.5">${bone.latin}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+                                ${bone.category}
+                            </span>
+                            <span class="text-[10px] font-semibold text-slate-400">${bone.countMain.split(' (')[0]}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setCategoryFilter(category) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`filter-${category}`);
+            activeBtn.classList.add('bg-teal-600', 'text-white', 'shadow-sm');
+            activeBtn.classList.remove('text-slate-600');
+
+            refresh3DMaterials();
+            renderBoneList();
+        }
+
+        function filterBoneList() {
+            renderBoneList();
+        }
+
+        function selectBone(boneId, shouldFocusCamera = true) {
+            const bone = BONES_DATA.find(b => b.id === boneId);
+            if (!bone) return;
+
+            selectedBoneId = boneId;
+            refresh3DMaterials();
+            if (shouldFocusCamera) focusCameraOnBone(bone);
+
+            document.getElementById('detailName').textContent = bone.name;
+            document.getElementById('detailLatin').querySelector('span').textContent = bone.latin;
+            document.getElementById('detailCategoryBadge').textContent = `Rangka ${bone.category}`;
+            document.getElementById('detailShapeBadge').textContent = bone.shape;
+            document.getElementById('detailCountMain').textContent = bone.countMain;
+            document.getElementById('detailCountBreakdown').textContent = bone.countBreakdown;
+            document.getElementById('detailLocation').textContent = bone.location;
+            document.getElementById('detailFunction').textContent = bone.function;
+            document.getElementById('detailClinicalNote').textContent = bone.clinicalNote || '';
+
+            document.getElementById('detailSubBones').innerHTML = bone.subBones.map(item => `
+                <li class="flex items-start gap-2">
+                    <span class="text-teal-600 font-extrabold mt-0.5">•</span>
+                    <span>${item}</span>
+                </li>
+            `).join('');
+
+            renderBoneList();
+        }
+
+        function navigateBone(direction) {
+            const idx = BONES_DATA.findIndex(b => b.id === selectedBoneId);
+            const nextIdx = (idx + direction + BONES_DATA.length) % BONES_DATA.length;
+            selectBone(BONES_DATA[nextIdx].id, true);
+        }
+
+        // =====================================================================
+        // 9. NAVIGASI 4 TAB UTAMA (TUJUAN / EKSPLORASI / KUIS / DAFTAR NILAI)
+        // =====================================================================
+        function switchMainTab(tabName) {
+            ['objectives', 'explore', 'quiz', 'scores'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('bg-white', 'text-teal-700', 'shadow-sm', 'font-bold');
+                btn.classList.add('text-slate-600', 'font-semibold');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.classList.add('bg-white', 'text-teal-700', 'shadow-sm', 'font-bold');
+            activeBtn.classList.remove('text-slate-600', 'font-semibold');
+
+            if (tabName === 'explore') {
+                setTimeout(onWindowResize, 50);
+            } else if (tabName === 'scores') {
+                renderScoreboardTable();
+            }
+        }
+
+        // =====================================================================
+        // 10. SISTEM KUIS PESERTA DIDIK (IDENTITAS, TIMER, SKOR & PEMBAHASAN)
+        // =====================================================================
+        let currentStudent = null;
+        let currentQuestionIdx = 0;
+        let userAnswers = [];
+        let quizStartTime = null;
+        let quizTimerInterval = null;
+        let latestSubmissionId = null;
+
+        function toggleCustomClassInput() {
+            const select = document.getElementById('studentClassSelect');
+            const wrapper = document.getElementById('customClassWrapper');
+            const customInput = document.getElementById('studentCustomClassInput');
+            if (select.value === 'CUSTOM') {
+                wrapper.classList.remove('hidden');
+                customInput.required = true;
+            } else {
+                wrapper.classList.add('hidden');
+                customInput.required = false;
+            }
+        }
+
+        function startStudentQuiz(event) {
+            event.preventDefault();
+            const name = document.getElementById('studentNameInput').value.trim();
+            const absent = document.getElementById('studentAbsentInput').value.trim();
+            const classSelect = document.getElementById('studentClassSelect').value;
+            const customClass = document.getElementById('studentCustomClassInput').value.trim();
+
+            const finalClass = classSelect === 'CUSTOM' ? customClass : classSelect;
+            if (!name || !finalClass) {
+                showToast('Mohon lengkapi Nama Lengkap dan Kelas terlebih dahulu!', 'warning');
+                return;
+            }
+
+            currentStudent = {
+                name,
+                className: finalClass,
+                absent: absent || '-'
+            };
+
+            currentQuestionIdx = 0;
+            userAnswers = new Array(QUIZ_QUESTIONS.length).fill(null);
+            quizStartTime = Date.now();
+
+            document.getElementById('activeQuizStudentInfo').textContent = `Peserta: ${currentStudent.name} • Kelas ${currentStudent.className} (Absen: ${currentStudent.absent})`;
+            document.getElementById('quiz-start-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-active-card').classList.remove('hidden');
+
+            startQuizTimer();
+            renderCurrentQuestion();
+        }
+
+        function startQuizTimer() {
+            clearInterval(quizTimerInterval);
+            quizTimerInterval = setInterval(() => {
+                const elapsedSec = Math.floor((Date.now() - quizStartTime) / 1000);
+                document.getElementById('quizTimerDisplay').textContent = formatSeconds(elapsedSec);
+            }, 1000);
+        }
+
+        function formatSeconds(totalSec) {
+            const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
+            const secs = String(totalSec % 60).padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function renderCurrentQuestion() {
+            const q = QUIZ_QUESTIONS[currentQuestionIdx];
+            const total = QUIZ_QUESTIONS.length;
+
+            document.getElementById('activeQuizProgressText').textContent = `Soal ${currentQuestionIdx + 1} dari ${total}`;
+            document.getElementById('quizProgressBar').style.width = `${((currentQuestionIdx + 1) / total) * 100}%`;
+            document.getElementById('questionCategoryTag').textContent = q.category;
+            document.getElementById('questionText').textContent = `${currentQuestionIdx + 1}. ${q.question}`;
+
+            const letters = ['A', 'B', 'C', 'D'];
+            document.getElementById('optionsContainer').innerHTML = q.options.map((opt, idx) => {
+                const isSelected = userAnswers[currentQuestionIdx] === idx;
+                return `
+                    <button type="button" onclick="selectQuizOption(${idx})"
+                        class="w-full text-left p-4 rounded-xl border-2 transition flex items-center gap-3.5 ${isSelected ? 'border-teal-600 bg-teal-50/80 text-teal-950 font-bold shadow-sm' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50 text-slate-700 font-medium'}">
+                        <span class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 ${isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-600'}">
+                            ${letters[idx]}
+                        </span>
+                        <span class="text-sm sm:text-base">${opt}</span>
+                    </button>
+                `;
+            }).join('');
+
+            // Render Indikator Nomor Soal
+            document.getElementById('questionDotsContainer').innerHTML = QUIZ_QUESTIONS.map((_, idx) => {
+                const answered = userAnswers[idx] !== null;
+                const current = idx === currentQuestionIdx;
+                return `
+                    <button type="button" onclick="jumpToQuestion(${idx})"
+                        class="w-6 h-6 rounded-md text-[10px] font-bold transition ${current ? 'bg-teal-600 text-white ring-2 ring-teal-300' : (answered ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-400')}">
+                        ${idx + 1}
+                    </button>
+                `;
+            }).join('');
+
+            document.getElementById('btnPrevQuestion').disabled = currentQuestionIdx === 0;
+            const nextBtn = document.getElementById('btnNextQuestion');
+            if (currentQuestionIdx === total - 1) {
+                nextBtn.textContent = 'Selesai & Lihat Nilai ✓';
+                nextBtn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+                nextBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            } else {
+                nextBtn.textContent = 'Selanjutnya →';
+                nextBtn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                nextBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            }
+        }
+
+        function selectQuizOption(optionIdx) {
+            userAnswers[currentQuestionIdx] = optionIdx;
+            renderCurrentQuestion();
+        }
+
+        function jumpToQuestion(idx) {
+            currentQuestionIdx = idx;
+            renderCurrentQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                renderCurrentQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIdx < QUIZ_QUESTIONS.length - 1) {
+                currentQuestionIdx++;
+                renderCurrentQuestion();
+            } else {
+                // Cek apakah ada soal yang belum dijawab
+                const unansweredIdx = userAnswers.findIndex(ans => ans === null);
+                if (unansweredIdx !== -1) {
+                    showToast(`Soal nomor ${unansweredIdx + 1} belum dijawab! Silakan lengkapi dahulu.`, 'warning');
+                    currentQuestionIdx = unansweredIdx;
+                    renderCurrentQuestion();
+                    return;
+                }
+                finishStudentQuiz();
+            }
+        }
+
+        function finishStudentQuiz() {
+            clearInterval(quizTimerInterval);
+            const elapsedSec = Math.max(1, Math.floor((Date.now() - quizStartTime) / 1000));
+            const durationFormatted = formatSeconds(elapsedSec);
+
+            let correctCount = 0;
+            QUIZ_QUESTIONS.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correctIndex) correctCount++;
+            });
+
+            const totalQuestions = QUIZ_QUESTIONS.length;
+            const wrongCount = totalQuestions - correctCount;
+            const finalScore = Math.round((correctCount / totalQuestions) * 100);
+            const predicate = getScorePredicate(finalScore);
+
+            // Simpan ke Daftar Nilai (localStorage)
+            const recordId = 'REC-' + Date.now();
+            latestSubmissionId = recordId;
+            const newRecord = {
+                id: recordId,
+                name: currentStudent.name,
+                className: currentStudent.className,
+                absent: currentStudent.absent,
+                correct: correctCount,
+                wrong: wrongCount,
+                score: finalScore,
+                predicate: predicate.label,
+                duration: durationFormatted,
+                timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+                createdAt: Date.now()
+            };
+
+            saveNewScoreRecord(newRecord);
+
+            // Tampilkan Kartu Hasil Akhir Peserta Didik
+            document.getElementById('resStudentName').textContent = currentStudent.name;
+            document.getElementById('resStudentMeta').textContent = `Kelas ${currentStudent.className} • No. Absen: ${currentStudent.absent}`;
+            document.getElementById('resFinalScore').textContent = finalScore;
+            const predEl = document.getElementById('resPredicate');
+            predEl.textContent = predicate.label;
+            predEl.className = `text-[11px] font-bold px-2.5 py-0.5 rounded-full ${predicate.badgeClass}`;
+
+            document.getElementById('resCorrectCount').textContent = `${correctCount} Soal`;
+            document.getElementById('resWrongCount').textContent = `${wrongCount} Soal`;
+            document.getElementById('resDuration').textContent = durationFormatted;
+
+            // Render Pembahasan Soal
+            const letters = ['A', 'B', 'C', 'D'];
+            document.getElementById('quizReviewContainer').innerHTML = QUIZ_QUESTIONS.map((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correctIndex;
+                return `
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'border-emerald-200 bg-emerald-50/40' : 'border-rose-200 bg-rose-50/40'}">
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-sm font-bold text-slate-900">${idx + 1}. ${q.question}</p>
+                            <span class="shrink-0 px-2 py-0.5 rounded-md text-[11px] font-extrabold ${isCorrect ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}">
+                                ${isCorrect ? 'Benar' : 'Salah'}
+                            </span>
+                        </div>
+                        <div class="mt-2 text-xs space-y-1">
+                            <p class="${isCorrect ? 'text-emerald-800' : 'text-rose-700'} font-semibold">
+                                Jawaban Anda: ${letters[userAns]}. ${q.options[userAns]}
+                            </p>
+                            ${!isCorrect ? `<p class="text-emerald-800 font-bold">Kunci Jawaban: ${letters[q.correctIndex]}. ${q.options[q.correctIndex]}</p>` : ''}
+                            <p class="text-slate-600 pt-1 italic">Pembahasan: ${q.explanation}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('quiz-active-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.remove('hidden');
+            showToast(`Kuis selesai! Nilai akhir Anda: ${finalScore}`, 'success');
+        }
+
+        function resetQuizToForm() {
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-active-card').classList.add('hidden');
+            document.getElementById('quiz-start-card').classList.remove('hidden');
+        }
+
+        function getScorePredicate(score) {
+            if (score >= 90) return { label: 'Sangat Baik (A)', badgeClass: 'bg-emerald-100 text-emerald-800' };
+            if (score >= 75) return { label: 'Baik / Tuntas (B)', badgeClass: 'bg-teal-100 text-teal-800' };
+            if (score >= 60) return { label: 'Cukup (C)', badgeClass: 'bg-amber-100 text-amber-800' };
+            return { label: 'Perlu Bimbingan (D)', badgeClass: 'bg-rose-100 text-rose-800' };
+        }
+
+        // =====================================================================
+        // 11. PENYIMPANAN & DAFTAR NILAI PESERTA DIDIK (LOCALSTORAGE + CSV)
+        // =====================================================================
+        const STORAGE_KEY_SCORES = 'atlas_sistem_gerak_scores_v1';
+
+        function initScoreboardData() {
+            let existing = getStoredScores();
+            if (!existing) {
+                // 3 Data Simulasi Awal agar Daftar Nilai langsung informatif
+                const sampleData = [
+                    {
+                        id: 'SAMPLE-1',
+                        name: 'Alya Zahra Ramadhani',
+                        className: 'XI IPA 1',
+                        absent: '04',
+                        correct: 10,
+                        wrong: 0,
+                        score: 100,
+                        predicate: 'Sangat Baik (A)',
+                        duration: '01:52',
+                        timestamp: 'Data Contoh',
+                        createdAt: Date.now() - 300000
+                    },
+                    {
+                        id: 'SAMPLE-2',
+                        name: 'Dimas Arya Saputra',
+                        className: 'XI IPA 2',
+                        absent: '11',
+                        correct: 8,
+                        wrong: 2,
+                        score: 80,
+                        predicate: 'Baik / Tuntas (B)',
+                        duration: '02:15',
+                        timestamp: 'Data Contoh',
+                        createdAt: Date.now() - 200000
+                    },
+                    {
+                        id: 'SAMPLE-3',
+                        name: 'Nadia Putri Maharani',
+                        className: 'XI IPA 1',
+                        absent: '19',
+                        correct: 9,
+                        wrong: 1,
+                        score: 90,
+                        predicate: 'Sangat Baik (A)',
+                        duration: '02:04',
+                        timestamp: 'Data Contoh',
+                        createdAt: Date.now() - 100000
+                    }
+                ];
+                localStorage.setItem(STORAGE_KEY_SCORES, JSON.stringify(sampleData));
+            }
+            updateScoreBadgeAndFilters();
+        }
+
+        function getStoredScores() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_SCORES);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveNewScoreRecord(record) {
+            const list = getStoredScores() || [];
+            list.unshift(record);
+            localStorage.setItem(STORAGE_KEY_SCORES, JSON.stringify(list));
+            updateScoreBadgeAndFilters();
+        }
+
+        function updateScoreBadgeAndFilters() {
+            const list = getStoredScores() || [];
+            document.getElementById('navScoreCount').textContent = list.length;
+
+            // Perbarui opsi filter kelas dinamis
+            const classSelect = document.getElementById('scoreClassFilter');
+            const currentVal = classSelect.value;
+            const uniqueClasses = [...new Set(list.map(item => item.className))].sort();
+            classSelect.innerHTML = `<option value="ALL">Semua Kelas (${list.length})</option>` +
+                uniqueClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (uniqueClasses.includes(currentVal)) classSelect.value = currentVal;
+        }
+
+        function renderScoreboardTable() {
+            const list = getStoredScores() || [];
+            const search = document.getElementById('scoreSearchInput').value.toLowerCase().trim();
+            const classFilter = document.getElementById('scoreClassFilter').value;
+            const sortBy = document.getElementById('scoreSortSelect').value;
+
+            let filtered = list.filter(item => {
+                const matchName = item.name.toLowerCase().includes(search);
+                const matchClass = classFilter === 'ALL' || item.className === classFilter;
+                return matchName && matchClass;
+            });
+
+            if (sortBy === 'highest') {
+                filtered.sort((a, b) => b.score - a.score || b.createdAt - a.createdAt);
+            } else if (sortBy === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            } else {
+                filtered.sort((a, b) => b.createdAt - a.createdAt);
+            }
+
+            // Hitung Statistik
+            const total = filtered.length;
+            const avg = total ? Math.round(filtered.reduce((acc, cur) => acc + cur.score, 0) / total) : 0;
+            const max = total ? Math.max(...filtered.map(cur => cur.score)) : 0;
+            const passed = filtered.filter(cur => cur.score >= 75).length;
+            const passRate = total ? Math.round((passed / total) * 100) : 0;
+
+            document.getElementById('statTotalStudents').textContent = `${total} Siswa`;
+            document.getElementById('statAvgScore').textContent = avg;
+            document.getElementById('statMaxScore').textContent = max;
+            document.getElementById('statPassRate').textContent = `${passRate}%`;
+
+            const tbody = document.getElementById('scoreboardTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-10 text-center text-slate-400 text-sm">
+                            Belum ada data nilai peserta didik yang sesuai filter.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((row, idx) => {
+                const isLatestMe = row.id === latestSubmissionId;
+                const predStyle = getScorePredicate(row.score);
+                return `
+                    <tr class="${isLatestMe ? 'bg-teal-50/90 font-semibold' : 'hover:bg-slate-50'} transition">
+                        <td class="py-3.5 px-4 text-slate-500 font-bold">${idx + 1}</td>
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-900">${row.name}</span>
+                                ${isLatestMe ? '<span class="px-2 py-0.5 text-[10px] font-extrabold bg-teal-600 text-white rounded-full">Nilai Anda</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">${row.className}</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center text-slate-600 font-medium">${row.absent}</td>
+                        <td class="py-3.5 px-4 text-center text-xs font-bold">
+                            <span class="text-emerald-600">${row.correct}B</span> / <span class="text-rose-600">${row.wrong}S</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <span class="font-display font-extrabold text-base ${row.score >= 75 ? 'text-teal-700' : 'text-rose-600'}">${row.score}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${predStyle.badgeClass}">${row.predicate}</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-xs text-slate-500">
+                            <div>${row.timestamp}</div>
+                            <div class="text-[11px] text-slate-400">Durasi: ${row.duration}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportScoresToCSV() {
+            const list = getStoredScores() || [];
+            if (list.length === 0) {
+                showToast('Tidak ada data nilai untuk diunduh.', 'warning');
+                return;
+            }
+
+            const headers = ['No', 'Nama Peserta Didik', 'Kelas', 'No Absen', 'Benar', 'Salah', 'Nilai Akhir', 'Predikat', 'Durasi', 'Waktu'];
+            const rows = list.map((r, i) => [
+                i + 1,
+                `"${r.name.replace(/"/g, '""')}"`,
+                `"${r.className}"`,
+                `"${r.absent}"`,
+                r.correct,
+                r.wrong,
+                r.score,
+                `"${r.predicate}"`,
+                `"${r.duration}"`,
+                `"${r.timestamp}"`
+            ]);
+
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Daftar_Nilai_Sistem_Gerak_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('File CSV Daftar Nilai berhasil diunduh!', 'success');
+        }
+
+        function confirmClearScores() {
+            document.getElementById('confirmResetModal').classList.remove('hidden');
+        }
+
+        function closeConfirmResetModal() {
+            document.getElementById('confirmResetModal').classList.add('hidden');
+        }
+
+        function executeClearScores() {
+            localStorage.setItem(STORAGE_KEY_SCORES, JSON.stringify([]));
+            latestSubmissionId = null;
+            updateScoreBadgeAndFilters();
+            renderScoreboardTable();
+            closeConfirmResetModal();
+            showToast('Seluruh data daftar nilai berhasil direset.', 'info');
+        }
+
+        // =====================================================================
+        // 12. HELPER MODAL & NOTIFIKASI
+        // =====================================================================
+        let toastTimeout;
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toastNotification');
+            const content = document.getElementById('toastContent');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            msg.textContent = message;
+            content.className = 'px-4 py-3 rounded-xl shadow-xl font-medium text-xs sm:text-sm flex items-center gap-2.5 text-white border ';
+
+            if (type === 'success') {
+                content.classList.add('bg-emerald-700', 'border-emerald-500');
+                icon.textContent = '✅';
+            } else if (type === 'warning') {
+                content.classList.add('bg-amber-600', 'border-amber-400');
+                icon.textContent = '⚠️';
+            } else {
+                content.classList.add('bg-slate-900', 'border-slate-700');
+                icon.textContent = 'ℹ️';
+            }
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3200);
+        }
+
+        function openInfoModal() {
+            document.getElementById('infoModal').classList.remove('hidden');
+        }
+
+        function closeInfoModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
